@@ -6,7 +6,7 @@
 
 agentprose turns the content your site already publishes into read-only [WebMCP](https://webmachinelearning.github.io/webmcp/) tools. Agents in the browser can read the current article, search the archive, open a section and cite you accurately, so they don't have to scrape your HTML.
 
-**[Documentation](https://salnikov.no/agentprose/)** · [Live demo](https://vibeprogrammer.github.io/agentprose-demo/) · [WordPress plugin](https://salnikov.no/agentprose/wordpress/) · [Tools](docs/tools.md) · [Adapters](docs/adapters.md) · [CLI](docs/cli.md) · [Security](SECURITY.md) · [agentprose Cloud](https://agentprose.cloud)
+**[Documentation](https://salnikov.no/agentprose/)** · [Live demo](https://vibeprogrammer.github.io/agentprose-demo/) · [WordPress plugin](https://wordpress.org/plugins/agentprose/) · [Tools](docs/tools.md) · [Adapters](docs/adapters.md) · [CLI](docs/cli.md) · [Security](SECURITY.md) · [agentprose Cloud](https://agentprose.cloud)
 
 [![npm version](https://img.shields.io/npm/v/agentprose?color=4338ca&label=npm)](https://www.npmjs.com/package/agentprose)
 [![License: MIT](https://img.shields.io/badge/license-MIT-34d399)](LICENSE)
@@ -79,7 +79,7 @@ With zero configuration, agentprose reads, in order:
 
 Nothing is fetched on page load. Registering the tools costs no network requests. The site-wide engine (6.6 KB) and your feeds load only when an agent first calls a site-wide tool. The result is cached for the session.
 
-## Three ways in
+## Four ways in
 
 ### 1. One line (any site)
 
@@ -139,12 +139,25 @@ npx agentprose build public --base-url https://example.com/ --llms
 
 This writes `agentprose.json` (metadata and a search excerpt per post), one `agentprose/posts/*.md` per post and, optionally, `llms.txt`. The script finds `/agentprose.json` automatically. `npx agentprose inspect https://example.com/some-post/` shows what agents can read on a live page and gives it an agent-readiness score.
 
+### 4. WordPress plugin
+
+The official plugin is in the WordPress.org plugin directory: **[wordpress.org/plugins/agentprose](https://wordpress.org/plugins/agentprose/)**.
+
+In wp-admin, go to **Plugins → Add New Plugin**, search for **agentprose**, click **Install Now**, then **Activate**. That's it: the read-only tools are live on every front-end page.
+
+- It bundles a fixed agentprose release and the pinned MCP-B WebMCP polyfill and serves them from your own site. No CDN.
+- It adds **Settings → agentprose** (post types, content selector, tool prefix, subscribe link, the polyfill switch) and a 🔌 tool inspector for administrators.
+- Nothing is sent anywhere unless you enter an [agentprose Cloud](https://agentprose.cloud) site key (`pk_…`) or your own analytics endpoint.
+- Each library release ships as a new plugin version, offered under **Dashboard → Updates** (auto-updates work too).
+
+Docs: [salnikov.no/agentprose/wordpress](https://salnikov.no/agentprose/wordpress/) · Source: [wordpress-plugin/](wordpress-plugin/)
+
 ## Platforms
 
 | Platform | How | Credentials in the page |
 |---|---|---|
 | Static sites (Hugo, Jekyll, Astro, Eleventy, Next.js export, Gatsby, Docusaurus, plain HTML) | One line, plus the CLI for large archives | none |
-| **WordPress** | Auto-detected, or the ready plugin ([docs](https://salnikov.no/agentprose/wordpress/), [source](wordpress-plugin/)) | none (public REST API) |
+| **WordPress** | Auto-detected, or the [plugin on wordpress.org](https://wordpress.org/plugins/agentprose/) ([docs](https://salnikov.no/agentprose/wordpress/), [source](wordpress-plugin/)) | none (public REST API) |
 | **Ghost** | `data-adapter="ghost" data-key="…"` | Content API key ([public by design](https://docs.ghost.org/content-api)) |
 | **Sanity** | `data-adapter="sanity" data-project="…"` | none for public datasets (API CDN + GROQ) |
 | **Contentful** | `data-adapter="contentful" data-space="…" data-token="…"` | Delivery API token (published content only) |
@@ -223,7 +236,7 @@ Learn which posts agents read, what they search for and what comes up empty. Sea
 
 ## Roadmap
 
-- [x] Zero-config script, 10 tools plus 3 opt-in actions, inspector, CLI, 7 CMS adapters, WordPress plugin
+- [x] Zero-config script, 10 tools plus 3 opt-in actions, inspector, CLI, 7 CMS adapters, WordPress plugin ([on wordpress.org](https://wordpress.org/plugins/agentprose/))
 - [ ] Declarative forms (WebMCP `toolname` attributes) for newsletter sign-up, opt-in
 - [ ] `agentprose build` plugins for Astro, Eleventy and Next.js (zero-step indexing)
 - [ ] Semantic search ("ask this blog") via an optional embedding index

@@ -2,7 +2,7 @@
 
 agentprose works on WordPress in two ways:
 
-- **The plugin** (`wordpress-plugin/agentprose`, on its way to wordpress.org): install, activate, done. It serves the script from your own site, adds a settings page (post types, content selector, tool prefix, subscribe link, the bundled MCP-B WebMCP polyfill, and an optional agentprose Cloud site key), and shows administrators a 🔌 tool inspector on the front end.
+- **The plugin** ([wordpress.org/plugins/agentprose](https://wordpress.org/plugins/agentprose/); source in `wordpress-plugin/agentprose`; in wp-admin: **Plugins → Add New Plugin**, search "agentprose"): install, activate, done. It serves the script from your own site, adds a settings page (post types, content selector, tool prefix, subscribe link, the bundled MCP-B WebMCP polyfill, and an optional agentprose Cloud site key), and shows administrators a 🔌 tool inspector on the front end.
 - **The script tag**: any WordPress site works with the one-line snippet too. agentprose sees `<link rel="https://api.w.org/">` and switches to the REST API on its own (see [adapters](adapters.md#wordpress)).
 
 Both register the same read-only tools, backed by the core REST API (`/wp/v2/posts`, `search`, `tags`, `categories`, `users`). Nothing is added on the server: no endpoints, no tables, no cron. Requests start only when an agent calls a tool.

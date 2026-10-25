@@ -49,7 +49,7 @@ No. The library is complete on its own. The Cloud adds analytics, hosted search 
 
 ### Is the WordPress plugin on wordpress.org?
 
-It is on its way. Until it is listed, [download the zip](../../downloads/agentprose-wordpress.zip) and upload it under **Plugins → Add New Plugin → Upload Plugin**, or use the script tag.
+Yes: [wordpress.org/plugins/agentprose](https://wordpress.org/plugins/agentprose/). In wp-admin, search for "agentprose" under **Plugins → Add New Plugin**. Updates then arrive through **Dashboard → Updates**.
 
 ### Who maintains agentprose?
 

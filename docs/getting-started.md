@@ -19,7 +19,7 @@ Where to put it:
 | Astro | Your base layout's `<head>`. See [examples/astro](../examples/astro). |
 | Eleventy | Your base layout. See [examples/eleventy](../examples/eleventy). |
 | Next.js | `<Script strategy="afterInteractive">` in `app/layout.tsx`. See [examples/nextjs](../examples/nextjs). |
-| WordPress | Install the [plugin](../wordpress-plugin/). |
+| WordPress | Install the [plugin from wordpress.org](https://wordpress.org/plugins/agentprose/): **Plugins → Add New Plugin**, search "agentprose". Source: [wordpress-plugin/](../wordpress-plugin/). |
 | Ghost | Settings → Code injection → Site header. See [examples/ghost](../examples/ghost). |
 
 ## 2. Check what agents see

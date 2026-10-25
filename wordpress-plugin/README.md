@@ -1,5 +1,7 @@
 # agentprose WordPress plugin
 
+**Install it from the WordPress.org plugin directory: [wordpress.org/plugins/agentprose](https://wordpress.org/plugins/agentprose/)** (in wp-admin: **Plugins → Add New Plugin**, search "agentprose"). User docs: [salnikov.no/agentprose/wordpress](https://salnikov.no/agentprose/wordpress/). This folder is the source and the release tooling.
+
 The plugin lives in `agentprose/` and ships the library's browser build. The JavaScript in `agentprose/js/` is generated (git-ignored): `sync.mjs` puts it there.
 
 ## How the plugin gets the library
@@ -40,7 +42,7 @@ Then:
    cd svn-agentprose
    svn add --force trunk && svn status | awk '/^!/{print $2}' | xargs -r svn rm
    svn cp trunk tags/0.1.2
-   svn ci -m "agentprose 0.1.2"
+   svn ci -m "agentprose 0.1.2" --username maxious   # SVN password: wordpress.org Profile → Account & Security
    ```
    Sites see the update within a few hours. Sites with auto-updates on install it by themselves.
 
@@ -56,13 +58,17 @@ vendor/bin/phpcs                 # uses phpcs.xml.dist
 
 Plugin Check (the tool wordpress.org reviewers use) needs a WordPress install: `wp plugin install plugin-check --activate`, copy `agentprose/` into `wp-content/plugins/`, then `wp plugin check agentprose --include-experimental`.
 
-## First release on wordpress.org
+## The wordpress.org listing
 
-`wporg-assets/` holds the files for the SVN `assets/` folder (banners, icons, screenshots). They are not part of the plugin zip.
+- Directory page: https://wordpress.org/plugins/agentprose/ (slug `agentprose`, owner and committer: `maxious`)
+- SVN: https://plugins.svn.wordpress.org/agentprose (`trunk/`, `tags/<version>/`, `assets/`)
+- First release: **0.1.3**, committed on 2026-10-25 as SVN r3765268 (`trunk/`, `tags/0.1.3/` and `assets/` in one commit). The JavaScript in it is byte-identical to the zip that passed review.
 
-1. Submit `dist/wordpress/agentprose.zip` at https://wordpress.org/plugins/developers/add/ and wait for review.
-2. After approval, with the SVN credentials from the approval email, do step 3 above and copy the assets once:
-   ```sh
-   cp wordpress-plugin/wporg-assets/* svn-agentprose/assets/
-   cd svn-agentprose && svn add --force assets && svn ci -m "Plugin assets"
-   ```
+wordpress.org serves the version named by `Stable tag` in `trunk/readme.txt`, from `tags/<Stable tag>/`. So a release is: sync, PR, then step 3 above (trunk + a new tag in one commit). Fixing only the readme (for example `Tested up to`) needs no new version: edit `readme.txt` in both `trunk/` and the current tag and commit.
+
+`wporg-assets/` holds the files for the SVN `assets/` folder (banners, icons, screenshots). They are not part of the plugin zip. To change one, replace it in both places:
+
+```sh
+cp wordpress-plugin/wporg-assets/*.png wordpress-plugin/wporg-assets/icon.svg svn-agentprose/assets/
+cd svn-agentprose && svn add --force assets && svn propset svn:mime-type image/png assets/*.png && svn ci -m "Update plugin assets" --username maxious
+```
