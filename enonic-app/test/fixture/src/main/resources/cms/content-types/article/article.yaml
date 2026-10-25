@@ -1,0 +1,19 @@
+kind: "ContentType"
+title: "Article"
+superType: "base:structured"
+form:
+  - type: "TextArea"
+    name: "preface"
+    label: "Preface"
+  - type: "HtmlArea"
+    name: "text"
+    label: "Text"
+  - type: "Tag"
+    name: "tags"
+    label: "Tags"
+    occurrences:
+      min: 0
+      max: 0
+  - type: "TextLine"
+    name: "author"
+    label: "Author"

@@ -1,0 +1,13 @@
+{
+  "name": "agentprose-plugin-test-studio",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Test Studio for sanity-plugin-agentprose; its dependencies are the plugin's devDependencies (node_modules is a link to ../../node_modules).",
+  "dependencies": {
+    "react": "*",
+    "react-dom": "*",
+    "sanity": "*",
+    "styled-components": "*"
+  }
+}

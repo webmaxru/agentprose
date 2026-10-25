@@ -152,6 +152,8 @@ In wp-admin, go to **Plugins → Add New Plugin**, search for **agentprose**, cl
 
 Docs: [salnikov.no/agentprose/wordpress](https://salnikov.no/agentprose/wordpress/) · Source: [wordpress-plugin/](wordpress-plugin/)
 
+**Sanity and Enonic XP.** [`sanity-plugin/`](sanity-plugin/) is a Studio plugin that shows what agents read from your dataset and hands you the install line; [`enonic-app/`](enonic-app/) is an XP 8 app that adds agentprose to a site from one setting, serving the files from the site itself. Both are prepared for their marketplaces ([docs/marketplaces/](docs/marketplaces/)) and not published yet.
+
 ## Platforms
 
 | Platform | How | Credentials in the page |
@@ -159,9 +161,9 @@ Docs: [salnikov.no/agentprose/wordpress](https://salnikov.no/agentprose/wordpres
 | Static sites (Hugo, Jekyll, Astro, Eleventy, Next.js export, Gatsby, Docusaurus, plain HTML) | One line, plus the CLI for large archives | none |
 | **WordPress** | Auto-detected, or the [plugin on wordpress.org](https://wordpress.org/plugins/agentprose/) ([docs](https://salnikov.no/agentprose/wordpress/), [source](wordpress-plugin/)) | none (public REST API) |
 | **Ghost** | `data-adapter="ghost" data-key="…"` | Content API key ([public by design](https://docs.ghost.org/content-api)) |
-| **Sanity** | `data-adapter="sanity" data-project="…"` | none for public datasets (API CDN + GROQ) |
+| **Sanity** | `data-adapter="sanity" data-project="…"`, plus a [Studio plugin](sanity-plugin/) that previews what agents read | none for public datasets (API CDN + GROQ) |
 | **Contentful** | `data-adapter="contentful" data-space="…" data-token="…"` | Delivery API token (published content only) |
-| **Enonic XP** | `data-adapter="enonic" data-endpoint="…/site/<project>/master"` | none (public Guillotine endpoint) |
+| **Enonic XP** | The [XP 8 app](enonic-app/) (one site setting), or `data-adapter="enonic" data-endpoint="<site>/_/com.enonic.app.guillotine:graphql"` | none (public Guillotine endpoint) |
 | **Strapi 5 / 4** | `data-adapter="strapi" data-api="https://cms…"` | none (Public role: find, findOne) |
 | **Storyblok** | `data-adapter="storyblok" data-token="…"` | public access token |
 | Anything else | `defineAdapter({ list, get, search?, taxonomies?, site? })` | your call |

@@ -96,7 +96,8 @@ describe('sanity', () => {
     const u = new URL(m.calls[0].url);
     expect(u.searchParams.get('$type')).toBe('"post"');
     expect(u.searchParams.get('$tag')).toBe('"x"');
-    expect(u.searchParams.get('query')).toContain('order(coalesce(publishedAt, _createdAt) desc)');
+    expect(u.searchParams.get('query')).toContain('order(coalesce(publishedAt, date, _createdAt) desc)');
+    expect(u.searchParams.get('perspective')).toBe('published');
   });
   it('searches with match + score and renders Portable Text bodies', async () => {
     await a.search!('web mcp');
@@ -152,8 +153,38 @@ describe('enonic', () => {
     expect(r.items[0]).toMatchObject({ title: 'Post one', summary: 'Pre', tags: ['a', 'b'], url: 'https://xp.ex/post-one', markdown: '## H\n\nx' });
     const body = JSON.parse(String(m.calls[0].init!.body));
     expect(body.variables.q.boolean.must[0]).toEqual({ term: { field: 'type', value: { string: 'com.ex:post' } } });
-    expect(body.variables.sort).toEqual({ field: 'publish.first', direction: 'DESC' });
-    expect((m.calls[0].init!.headers as any)['X-Guillotine-SiteKey']).toBe('/site');
+    expect(body.variables.q.boolean.must.at(-1)).toEqual({ term: { field: 'data.tags', value: { string: 'a' } } });
+    expect(body.variables.sort).toEqual([{ field: 'publish.first', direction: 'DESC' }]);
+    expect(body.query).toContain('$sort: [SortDslInput]');
+    expect(body.query).toContain('guillotine(scopeKey: "/site")');
+    expect(body.variables.q.boolean.must[1]).toEqual({ like: { field: '_path', value: '/content/site/*' } });
+  });
+  it('falls back to the Guillotine 7 shape (pageUrl string + site key header) and remembers it', async () => {
+    const g7 = mockFetch({
+      'https://xp7.ex/site/proj/master': (_u: URL, init?: RequestInit) => {
+        const body = JSON.parse(String(init!.body));
+        if (body.query.includes('pageUrl {')) return { errors: [{ message: "Validation error (FieldUndefined@[guillotine/queryDsl/pageUrl/baseUrl]) : Field 'baseUrl' in type 'String' is undefined" }] };
+        return { data: { guillotine: { queryDsl: [{ _id: 'i', _name: 'p', displayName: 'P', dataAsJson: {}, pageUrl: 'https://xp7.ex/p' }] } } };
+      },
+    });
+    const b = enonic({ endpoint: 'https://xp7.ex/site/proj/master', contentType: 'com.ex:post', siteKey: '/site', fetch: g7.fetch });
+    expect((await b.list()).items[0].url).toBe('https://xp7.ex/p');
+    expect(g7.calls.length).toBe(2);
+    expect((g7.calls[1].init!.headers as any)['X-Guillotine-SiteKey']).toBe('/site');
+    await b.list();
+    expect(g7.calls.length).toBe(3);
+  });
+  it('builds page URLs from Guillotine 8 parts relative to a site-mounted endpoint', async () => {
+    const g8 = mockFetch({
+      'https://xp8.ex/site/proj/master/blog/_/com.enonic.app.guillotine:graphql': () => ({
+        data: { guillotine: { queryDsl: [
+          { _id: 'i', _name: 'p', displayName: 'P', dataAsJson: {}, pageUrl: { baseUrl: null, path: '/p', queryString: '' } },
+          { _id: 'j', _name: 'q', displayName: 'Q', dataAsJson: {}, pageUrl: { baseUrl: 'https://www.ex', path: '/q', queryString: 'a=1' } },
+        ] } },
+      }),
+    });
+    const b = enonic({ endpoint: 'https://xp8.ex/site/proj/master/blog/_/com.enonic.app.guillotine:graphql', contentType: 'c:p', siteKey: '/blog', fetch: g8.fetch });
+    expect((await b.list()).items.map((p) => p.url)).toEqual(['https://xp8.ex/site/proj/master/blog/p', 'https://www.ex/q?a=1']);
   });
   it('uses a fulltext expression for search', async () => {
     await a.search!('hello world');

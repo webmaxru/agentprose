@@ -1,0 +1,90 @@
+name: CMS integrations
+
+# The Sanity Studio plugin (sanity-plugin/) and the Enonic XP app (enonic-app/).
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'sanity-plugin/**'
+      - 'enonic-app/**'
+      - 'src/adapters/**'
+      - 'package.json'
+      - '.github/workflows/integrations.yml'
+  pull_request:
+    paths:
+      - 'sanity-plugin/**'
+      - 'enonic-app/**'
+      - 'src/adapters/**'
+      - 'package.json'
+      - '.github/workflows/integrations.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  sanity-plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24   # @sanity/plugin-kit 10 needs Node 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            sanity-plugin/package-lock.json
+      - run: npm ci
+      - run: npm ci
+        working-directory: sanity-plugin
+      - run: npm run lint
+        working-directory: sanity-plugin
+      - run: npm run typecheck
+        working-directory: sanity-plugin
+      - name: Tests against the agentprose release on npm
+        run: npm test
+        working-directory: sanity-plugin
+      - name: Tests against this repository's adapter
+        run: npm test
+        working-directory: sanity-plugin
+        env:
+          AGENTPROSE_SRC: '1'
+      - name: Build (plugin-kit verify-package + pkg-utils)
+        run: npm run build
+        working-directory: sanity-plugin
+      - id: chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+      - name: Real Studio build, driven in headless Chrome
+        run: npm run test:studio
+        working-directory: sanity-plugin
+        env:
+          CHROME: ${{ steps.chrome.outputs.chrome-path }}
+          SANITY_TELEMETRY_DISABLED: '1'
+
+  enonic-app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - name: Bundled agentprose files match the app version
+        run: node enonic-app/sync.mjs --check
+      - run: node --test enonic-app/test/app.test.mjs
+      - name: Build the app
+        run: ./gradlew build --no-daemon --console=plain
+        working-directory: enonic-app
+      - name: Build the test fixture app
+        run: ../../gradlew -p . build --no-daemon --console=plain
+        working-directory: enonic-app/test/fixture
+      - uses: actions/upload-artifact@v4
+        with:
+          name: enonic-app
+          path: |
+            enonic-app/build/libs/*.jar
+            enonic-app/test/fixture/build/libs/*.jar
