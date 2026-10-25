@@ -1,0 +1,54 @@
+plugins {
+    id 'maven-publish'
+    id 'com.enonic.xp.app'
+}
+
+dependencies {
+    include xplibs.portal
+    include 'com.enonic.lib:lib-asset:2.0.1'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    xp.enonicRepo()
+}
+
+// The agentprose files this app serves are a copy of one npm release (see sync.mjs). Refuse to build
+// a jar without them, so a checkout that skipped the sync can never ship an app that injects a 404.
+tasks.register('checkAgentproseAssets') {
+    def dir = file('src/main/resources/assets/agentprose')
+    inputs.dir(dir).optional()
+    doLast {
+        ['agentprose.min.js', 'adapters/enonic.min.js', 'vendor/webmcp-polyfill.iife.js', 'VERSION'].each {
+            if (!new File(dir, it).isFile()) {
+                throw new GradleException("Missing assets/agentprose/" + it + ". Run: node enonic-app/sync.mjs")
+            }
+        }
+    }
+}
+processResources.dependsOn 'checkAgentproseAssets'
+
+// Enonic Market needs the jar in a public Maven repository (downloadable without login).
+// `./gradlew publish -PrepoDir=<dir>` writes a static Maven repository (any static host serves it);
+// `./gradlew publishToMavenLocal` is what JitPack runs. See docs/marketplaces/enonic/.
+publishing {
+    publications {
+        app(MavenPublication) {
+            from components.java
+            pom {
+                name = 'agentprose'
+                description = 'Make an Enonic XP site readable by AI agents through WebMCP.'
+                url = 'https://github.com/webmaxru/agentprose/tree/main/enonic-app'
+                licenses { license { name = 'MIT'; url = 'https://opensource.org/licenses/MIT' } }
+                developers { developer { name = 'Maxim Salnikov'; email = 'salnikov@gmail.com' } }
+                scm { url = 'https://github.com/webmaxru/agentprose' }
+            }
+        }
+    }
+    repositories {
+        if (project.hasProperty('repoDir')) {
+            maven { name = 'dir'; url = uri(project.property('repoDir')) }
+        }
+    }
+}

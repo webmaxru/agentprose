@@ -1,0 +1,16 @@
+plugins {
+    id 'com.enonic.xp.app'
+}
+
+dependencies {
+    include xplibs.portal
+    include xplibs.content
+    include xplibs.context
+    include xplibs.project
+    include xplibs.auth
+}
+
+repositories {
+    mavenCentral()
+    xp.enonicRepo()
+}

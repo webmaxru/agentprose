@@ -5,7 +5,14 @@ All notable changes to this project are documented here. The format follows [Kee
 ## [Unreleased]
 
 ### Added
+- **Sanity Studio plugin** (`sanity-plugin/`, npm `sanity-plugin-agentprose`, not published yet): an **AI agents** tool showing the published posts agents list, search as `search_posts` does, each post as `get_post` markdown, the install snippet for the project, and checks for a private dataset or a missing CORS origin. Studio v5 and v6. Tested with vitest (real GROQ via groq-js) and in a production `sanity build` driven by headless Chromium.
+- **Enonic XP app** (`enonic-app/`, `no.salnikov.agentprose`, XP 8, not published yet): adds agentprose to a site from one site setting through a response processor, serves the release and the WebMCP polyfill from the site (lib-asset), publishes `/agentprose.json` as a site index, and has a Guillotine mode. Tested on an XP 8.1.1 sandbox with Guillotine 9 (`enonic-app/test/sandbox-e2e.mjs`).
+- Marketplace submission kits for Sanity Exchange and Enonic Market in `docs/marketplaces/`, and docs pages *Install → Sanity* and *Install → Enonic XP*.
 - Documentation site at [salnikov.no/agentprose](https://salnikov.no/agentprose/) (Astro + Starlight, `website/`), deployed to GitHub Pages by `.github/workflows/docs.yml`: quick start, every install path, concepts, platform guides, a WordPress plugin section, and an API reference generated from the TypeScript source. The site runs agentprose on its own pages, with an index built by `agentprose build`.
+
+### Fixed
+- **Enonic adapter on Guillotine 8 and 9 (XP 8).** 0.1.3 failed on Guillotine 9 (`sort` is now a list of `SortDslInput`). The adapter sends the v8+ query shape (`sort` list, `pageUrl` with `baseUrl`, `scopeKey`/`project`/`branch`), falls back to the Guillotine 7 shape automatically, keeps results inside the site, builds site-relative URLs from the endpoint, and `get` by id no longer returns other content types. `project` and `branch` options (and `data-project`, `data-branch`).
+- **Sanity adapter.** Summaries from Portable Text used string slicing that GROQ does not have; `get` and search sent `undefined` parameters, which the API rejects; drafts could be returned. Now: a GROQ-valid 280-character summary, no undefined parameters, `perspective=published`, search over `body` and `content`, and the Next.js starter's fields (`content`, `date`, `coverImage`). A new `client` option takes a Sanity client (anything with `fetch(query, params)`). The GROQ is tested by running it with groq-js.
 
 ### Changed
 - `package.json` `homepage` points to the documentation site (npm shows it from the next release).

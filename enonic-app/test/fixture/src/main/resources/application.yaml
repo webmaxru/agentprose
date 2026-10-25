@@ -1,0 +1,5 @@
+kind: "Application"
+title: "agentprose test blog"
+description: "Fixture for the agentprose app tests. Not for production."
+vendorName: "agentprose"
+vendorUrl: "https://salnikov.no/agentprose/"

@@ -22,7 +22,7 @@ Public dataset; add your site's origin to the project's CORS origins, without cr
         data-type="post" data-url-pattern="/blog/{slug}/"></script>
 ```
 
-Search uses GROQ `match` with `score()`.
+Search uses GROQ `match` with `score()`. The [Sanity page](../../install/sanity/) covers the schema mapping and the Studio plugin that previews what agents read.
 
 </TabItem>
 <TabItem label="Contentful">
@@ -40,15 +40,15 @@ Search uses the CDA `query=` parameter.
 </TabItem>
 <TabItem label="Enonic XP">
 
-A public Guillotine endpoint.
+A public Guillotine endpoint: on XP 8 the API mounted on the site (`<site URL>/_/com.enonic.app.guillotine:graphql`; here the site is served at the domain root). On XP 8, the [agentprose app](../../install/enonic/) does all of this from one site setting.
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/agentprose@0/dist/agentprose.min.js" defer
-        data-adapter="enonic" data-endpoint="https://example.com/site/myproject/master"
+        data-adapter="enonic" data-endpoint="https://example.com/_/com.enonic.app.guillotine:graphql"
         data-content-type="com.example.myapp:article" data-site-key="/mysite"></script>
 ```
 
-Search uses the Query DSL `fulltext`.
+Search uses the Query DSL `fulltext`. Guillotine 8 and 9 (XP 8) need agentprose 0.1.4 or later; the XP 7 endpoint shape (`…/site/myproject/master`) still works.
 
 </TabItem>
 <TabItem label="Strapi">
