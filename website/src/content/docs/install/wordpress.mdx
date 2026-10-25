@@ -1,20 +1,20 @@
 ---
 title: "WordPress plugin"
-description: "Install the agentprose WordPress plugin from the zip (wordpress.org listing pending), or use the script tag."
+description: "Install the agentprose WordPress plugin from the WordPress.org plugin directory, or use the script tag."
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
 <Steps>
 
-1. [Download agentprose-wordpress.zip](../../downloads/agentprose-wordpress.zip). It is built from the released plugin source and bundles the matching agentprose release plus the pinned MCP-B polyfill. The plugin is in review for wordpress.org (slug `agentprose`); once listed, search for "agentprose" under **Plugins → Add New Plugin** instead.
-2. In wp-admin: **Plugins → Add New Plugin → Upload Plugin**, choose the zip, **Install Now**.
+1. In wp-admin: **Plugins → Add New Plugin**, search for **agentprose** (the plugin's page: [wordpress.org/plugins/agentprose](https://wordpress.org/plugins/agentprose/)).
+2. Click **Install Now**. The plugin bundles the matching agentprose release plus the pinned MCP-B polyfill.
 3. **Activate.** The tools are live on every front-end page.
 4. As an administrator, open any post and click 🔌 to see and run the tools.
 
 </Steps>
 
-Requirements: WordPress 6.3+, PHP 7.4+.
+Requirements: WordPress 6.3+, PHP 7.4+. No access to the directory from wp-admin? **Download** the zip on the [wordpress.org listing](https://wordpress.org/plugins/agentprose/) and upload it under **Plugins → Add New Plugin → Upload Plugin**.
 
 Everything else (every setting, Cloud vs self-hosted, caching and CSP, uninstall, FAQ and the changelog) is in the [WordPress plugin section](../../wordpress/).
 

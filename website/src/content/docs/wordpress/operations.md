@@ -26,7 +26,7 @@ The plugin adds suggested text to **Settings → Privacy → Policy guide**: it 
 
 ## Updates
 
-Each agentprose library release ships as a new plugin version with the scripts included (plugin 0.1.3 bundles agentprose 0.1.3). Once the plugin is on wordpress.org, WordPress offers it under **Dashboard → Updates**; turn on **Enable auto-updates** on the Plugins screen to get fixes without doing anything. The plugin never downloads code from anywhere else. Until then, install a newer zip over the old one (**Upload Plugin** offers to replace it).
+Each agentprose library release ships as a new plugin version with the scripts included (plugin 0.1.3 bundles agentprose 0.1.3). WordPress offers each new version under **Dashboard → Updates**, from the [wordpress.org directory](https://wordpress.org/plugins/agentprose/); turn on **Enable auto-updates** on the Plugins screen to get fixes without doing anything. The plugin never downloads code from anywhere else. If you installed an early zip by hand, the directory version updates it in place (same slug, `agentprose`).
 
 ## Deactivate and uninstall
 
