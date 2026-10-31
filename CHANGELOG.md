@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-10-31
+
+The first version published from GitHub Actions (npm trusted publishing, with a provenance attestation). 0.1.4 was tagged and has a GitHub Release, but it was created before the release workflow was on `main`, so it was never published to npm; 0.1.5 is the first npm release after 0.1.3 and contains everything below.
+
 ### Added
 - **Sanity Studio plugin** (`sanity-plugin/`, npm `sanity-plugin-agentprose`, not published yet): an **AI agents** tool showing the published posts agents list, search as `search_posts` does, each post as `get_post` markdown, the install snippet for the project, and checks for a private dataset or a missing CORS origin. Studio v5 and v6. Tested with vitest (real GROQ via groq-js) and in a production `sanity build` driven by headless Chromium.
 - **Enonic XP app** (`enonic-app/`, `no.salnikov.agentprose`, XP 8, not published yet): adds agentprose to a site from one site setting through a response processor, serves the release and the WebMCP polyfill from the site (lib-asset), publishes `/agentprose.json` as a site index, and has a Guillotine mode. Tested on an XP 8.1.1 sandbox with Guillotine 9 (`enonic-app/test/sandbox-e2e.mjs`).

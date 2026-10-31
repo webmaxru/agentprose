@@ -4,7 +4,7 @@
 
 Commands are for **Windows PowerShell 5.1** (`npm.cmd`, because `npm.ps1` may be blocked). Every npm command that talks to the registry carries `--registry https://registry.npmjs.org`. You need `gh` (GitHub CLI) logged in as `webmaxru`.
 
-> **Status:** this is an alternative to the manual route in `RELEASING.md` §2. Use one route per version. agentprose 0.1.3 and earlier were published by hand with no provenance; the first CI release is also the first with the new repository/homepage links on npm.
+> **Status (2026-10-31):** live, and the default route. agentprose 0.1.5 was the first version published by this workflow (trusted publishing, provenance attestation on npm; the `npm` environment has a required reviewer and only `v*` tags may deploy to it). The short how-to is at the top of `RELEASING.md`; this page is the setup and the reference. Publishing by hand stays as the fallback; use one route per version. If you publish a version by hand and create a GitHub Release from its tag afterwards, this workflow sees the version on npm and publishes nothing.
 >
 > Only the npm package at the repository root is published. The WordPress plugin (`wordpress-plugin/`) and agentprose Cloud keep their own release steps (`RELEASING.md` §6–7).
 
@@ -67,6 +67,8 @@ npm.cmd trust list agentprose --registry https://registry.npmjs.org
 ```
 
 ### 4. Cut the first release (see below) and approve it
+
+Done: 0.1.5 on 2026-10-31.
 
 ### 5. After the first CI publish succeeds: lock down tokens
 
@@ -148,6 +150,8 @@ Caveats: npm is phasing these tokens out. 2FA-bypass tokens lose **direct publis
 
 ## Troubleshooting
 
+- The run is red at **Confirm on the registry** while **npm publish** is green: the version is on npm, it was just not visible yet. On 2026-10-31 both first CI releases (0.1.5) failed this way after a 60 s wait (npm showed them 1–3 minutes after the upload); the step now waits up to 5 minutes. Check `npm view <name>@x.y.z version`; don't re-run, npm refuses a version twice. Steps after it (agentprose: the jsDelivr purge) are skipped in that case; run them by hand if needed.
+- A GitHub Release whose tag points at a commit **without** `.github/workflows/release.yml` runs nothing (GitHub reads the workflow from the tagged commit). agentprose v0.1.4 was released that way on 2026-10-31 and is not on npm.
 - `ENEEDAUTH` / `E404` on publish: the trusted publisher fields don't match the run (user, repo, `release.yml`, environment `npm`), or the configuration expired (more than 2 days without a publish: delete it and add it again).
 - Trusted publishing needs npm ≥ 11.5.1 and Node ≥ 22.14 on a GitHub-hosted runner; the publish job uses Node 24 (bundles npm 11) and checks this.
 - Provenance only works from a **public** repository (this one is public).
