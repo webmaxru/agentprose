@@ -1,6 +1,6 @@
 {
   "name": "sanity-plugin-agentprose",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Sanity Studio tool for agentprose: see what AI agents read from your dataset through WebMCP, and get the one-line install for your website.",
   "keywords": [
     "sanity",

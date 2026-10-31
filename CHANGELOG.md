@@ -7,7 +7,8 @@ All notable changes to this project are documented here. The format follows [Kee
 No library changes yet. Tooling around it:
 
 ### Changed
-- Sanity Studio plugin 0.1.5 (`sanity-plugin/`): depends on `agentprose ^0.1.5`; still to be published to npm (first version by hand, see RELEASING.md section 8).
+- Sanity Studio plugin 0.1.5 (`sanity-plugin/`): depends on `agentprose ^0.1.5`; published to npm by hand on 2026-10-31 (the first version, so the npm trusted publisher could be added).
+- Sanity Studio plugin 0.1.6: no functional changes; the first plugin release published from GitHub Actions (`release-sanity-plugin.yml`, trusted publishing + provenance), which also validates the npm trusted-publisher configuration.
 - Enonic XP app 0.1.5 (`enonic-app/`): bundles agentprose 0.1.5 (`node enonic-app/sync.mjs 0.1.5`), so Guillotine mode works on Guillotine 8/9.
 
 ### Added
