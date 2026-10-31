@@ -4,7 +4,7 @@ Tags: ai, webmcp, mcp, ai-agents, llm
 Requires at least: 6.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.1.3
+Stable tag: 0.1.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -116,6 +116,11 @@ Maxim Salnikov (WordPress.org: maxious, GitHub: webmaxru, salnikov@gmail.com). H
 
 == Changelog ==
 
+= 0.1.6 =
+* Bundles [agentprose 0.1.6](https://github.com/webmaxru/agentprose/blob/main/CHANGELOG.md) and the MCP-B WebMCP polyfill 6.0.3, served from your site.
+* The tool inspector (`?agentprose-inspect`) stays styled on sites with a strict Content Security Policy (no `unsafe-inline` needed for styles).
+* The library's banner and links name its new home, github.com/webmaxru/agentprose.
+
 = 0.1.3 =
 * Bundles [agentprose 0.1.3](https://github.com/webmaxru/agentprose/blob/main/CHANGELOG.md) and the MCP-B WebMCP polyfill 6.0.3, served from your site.
 * With an agentprose Cloud site key, agents can read the notes and contact details you enter in the Cloud dashboard (new read-only `get_contact_info` tool). They are fetched only when an agent asks, never on page load.
@@ -127,6 +132,9 @@ Maxim Salnikov (WordPress.org: maxious, GitHub: webmaxru, salnikov@gmail.com). H
 * First release on WordPress.org: read-only WebMCP tools for posts, pages and custom post types; settings page; bundled MCP-B WebMCP polyfill (served locally, can be switched off); optional agentprose Cloud (analytics and hosted search).
 
 == Upgrade Notice ==
+
+= 0.1.6 =
+Updates the bundled agentprose library to 0.1.6: the tool inspector works under a strict Content Security Policy.
 
 = 0.1.3 =
 Updates the bundled agentprose library to 0.1.3: owner notes and contact details for agents (with a Cloud site key).
