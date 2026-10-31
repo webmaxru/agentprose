@@ -43,10 +43,12 @@ https://salnikov.no/agentprose/install/enonic/  (source README: https://github.c
 ## Source code URL
 https://github.com/webmaxru/agentprose/tree/main/enonic-app
 
-## Maven coordinates (once published, see SUBMISSION.md)
-- Repository URL: depends on the hosting chosen (static repo, JitPack or Maven Central)
-- groupId: `no.salnikov` (JitPack: `com.github.webmaxru`)
+## Maven coordinates
+- Repository URL: `https://salnikov.no/agentprose/maven` (static Maven repository on the docs site, rebuilt from the `enonic-v*` GitHub Releases)
+- groupId: `no.salnikov`
 - artifactId: `agentprose`
+- App key: `no.salnikov.agentprose`
+- Jar: https://salnikov.no/agentprose/maven/no/salnikov/agentprose/0.1.5/agentprose-0.1.5.jar
 
 ## Version entry
 - Version: 0.1.5
