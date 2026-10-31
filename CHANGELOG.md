@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+Tooling around the library:
+
+### Changed
+- WordPress plugin 0.1.6 (`wordpress-plugin/`): bundles agentprose 0.1.6 (`node wordpress-plugin/sync.mjs 0.1.6`); reaches wordpress.org once it is committed to SVN (trunk + `tags/0.1.6`).
+- Enonic XP app 0.1.6 (`enonic-app/`): bundles agentprose 0.1.6 (`node enonic-app/sync.mjs 0.1.6`); the jar and the Maven repo update with a GitHub Release `enonic-v0.1.6`.
+
 ## [0.1.6] - 2026-10-31
 
 ### Fixed
