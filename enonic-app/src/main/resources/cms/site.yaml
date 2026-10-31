@@ -1,0 +1,12 @@
+kind: "Site"
+# The Asset API (lib-asset) serves the bundled agentprose files from this app, on the site's own origin.
+apis:
+  - "asset"
+processors:
+  - name: "agentprose"
+    order: 50
+# <site>/agentprose.json: the site's pages as an agentprose index (rendered-pages mode).
+mappings:
+  - controller: "/cms/agentprose-index.js"
+    pattern: "/agentprose\\.json"
+    order: 50

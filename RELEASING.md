@@ -102,3 +102,10 @@ agentprose Cloud serves its own copy of the library (`/v/<version>/` and the eve
 ## 7. WordPress plugin
 
 The plugin in `wordpress-plugin/` is released separately to WordPress.org (see its README). It bundles its own copy of `agentprose.min.js` and the MCP-B polyfill, so an npm release does not change it until the plugin is rebuilt and released.
+
+## 8. Sanity Studio plugin and Enonic XP app
+
+Both follow the library: release agentprose first, then:
+
+- **Sanity** (`sanity-plugin/`, Node 24): bump `version` and the `agentprose` dependency, `npm ci && npm test && npm run build && npm run test:studio`, then `npm publish --access public` from `sanity-plugin/`. Exchange listing: [docs/marketplaces/sanity/SUBMISSION.md](docs/marketplaces/sanity/SUBMISSION.md).
+- **Enonic** (`enonic-app/`, JDK 25): `node enonic-app/sync.mjs <version>` (copies the npm release into the app, sets the app version), `node --test enonic-app/test/app.test.mjs`, `cd enonic-app && ./gradlew build`, commit, tag `enonic-v<version>`, publish the jar to the public Maven repository. Market: [docs/marketplaces/enonic/SUBMISSION.md](docs/marketplaces/enonic/SUBMISSION.md).

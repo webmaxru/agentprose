@@ -98,6 +98,7 @@
     "@mcp-b/webmcp-polyfill": "6.0.3",
     "@types/node": "^22.20.5",
     "esbuild": "^0.24.2",
+    "groq-js": "^2.0.1",
     "happy-dom": "^15.11.7",
     "playwright-core": "^1.56.0",
     "typescript": "^5.9.3",

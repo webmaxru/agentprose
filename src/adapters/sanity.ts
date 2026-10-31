@@ -15,15 +15,26 @@ export interface SanityOptions extends BaseOptions {
   useCdn?: boolean;
   /** Only for public read tokens on a proxy. Never put a private token in a page. */
   token?: string;
+  /**
+   * Run queries through an existing client instead of fetch, e.g. `@sanity/client` on a server or the
+   * Studio's `useClient()`. Anything with `fetch(query, params)` that resolves to the query result works.
+   */
+  client?: { fetch: (query: string, params?: Record<string, unknown>) => Promise<any> };
 }
 
+// Field names cover Sanity's "blog" Studio template (body, mainImage, publishedAt, categories) and the
+// Next.js starter (content, coverImage, date). GROQ cannot slice strings, so the fallback summary is cut
+// with string::split/array::join on the server instead of sending whole bodies for a list.
+const BODY = 'coalesce(body, content)';
+const DATE = 'coalesce(publishedAt, date, _createdAt)';
+const TAGS = 'coalesce(categories[]->title, tags[]->title, tags, [])';
 const DEFAULT_PROJECTION = `{
   "id": _id, title, "slug": slug.current,
-  "summary": coalesce(excerpt, description, pt::text(body)[0...280]),
-  "published": coalesce(publishedAt, _createdAt), "updated": _updatedAt,
+  "summary": coalesce(excerpt, description, array::join(string::split(pt::text(${BODY}), "")[0...280], "")),
+  "published": ${DATE}, "updated": _updatedAt,
   "authors": select(defined(authors) => authors[]->name, defined(author) => [author->name], []),
-  "tags": coalesce(categories[]->title, tags[]->title, tags, []),
-  "image": mainImage.asset->url
+  "tags": ${TAGS},
+  "image": coalesce(mainImage, coverImage).asset->url
 }`;
 
 /** Sanity Content Lake via GROQ on the API CDN. https://www.sanity.io/docs/content-lake/api-cdn */
@@ -33,9 +44,14 @@ export function sanity(o: SanityOptions): ContentAdapter {
   const type = o.type || 'post';
   const proj = o.projection || DEFAULT_PROJECTION;
   const host = `https://${o.projectId}.${o.useCdn === false ? 'api' : 'apicdn'}.sanity.io/v${o.apiVersion || '2025-02-19'}/data/query/${o.dataset || 'production'}`;
-  const q = async (query: string, params: Record<string, unknown> = {}) => {
+  const q = async (query: string, all: Record<string, unknown> = {}) => {
+    // An undefined param would be sent as "$id=undefined", which the API rejects as invalid JSON.
+    const params = Object.fromEntries(Object.entries(all).filter(([, v]) => v !== undefined));
+    if (o.client) return o.client.fetch(query, params);
     const u = new URL(host);
     u.searchParams.set('query', query);
+    // Explicit, so a token never widens results to drafts or release versions.
+    u.searchParams.set('perspective', 'published');
     for (const [k, v] of Object.entries(params)) u.searchParams.set('$' + k, JSON.stringify(v));
     const { json } = await getJson(f, via(o, u.href), o.token ? { headers: { Authorization: `Bearer ${o.token}` } } : undefined);
     return json.result;
@@ -47,10 +63,10 @@ export function sanity(o: SanityOptions): ContentAdapter {
       `_type == $type`,
       `defined(slug.current)`,
       `!(_id in path("drafts.**"))`,
-      x.tag && `$tag in coalesce(categories[]->title, tags[]->title, tags, [])`,
+      x.tag && `$tag in ${TAGS}`,
       x.author && `($author in authors[]->name || author->name == $author)`,
-      x.since && `coalesce(publishedAt, _createdAt) >= $since`,
-      x.until && `coalesce(publishedAt, _createdAt) <= $until`,
+      x.since && `${DATE} >= $since`,
+      x.until && `${DATE} <= $until`,
     ]
       .filter(Boolean)
       .join(' && ');
@@ -61,18 +77,19 @@ export function sanity(o: SanityOptions): ContentAdapter {
       const limit = lim(x, 20, 200);
       const from = x.offset || 0;
       const order = x.sort === 'oldest' ? 'asc' : 'desc';
-      const r = await q(`{"items": *[${where(x)}] | order(coalesce(publishedAt, _createdAt) ${order}) [${from}...${from + limit}] ${proj}, "total": count(*[${where(x)}])}`, params(x));
+      const r = await q(`{"items": *[${where(x)}] | order(${DATE} ${order}) [${from}...${from + limit}] ${proj}, "total": count(*[${where(x)}])}`, params(x));
       return { items: r.items.map(map), total: r.total };
     },
     async search(text: string, x: ListOptions = {}) {
       const limit = lim(x, 10, 50);
-      const r = await q(`*[${where(x)} && [title, pt::text(body), excerpt] match $q] | score(boost(title match $q, 3), pt::text(body) match $q) | order(_score desc) [0...${limit}] ${proj}`, { ...params(x), q: text.split(/\s+/).map((w) => w + '*').join(' ') });
+      const r = await q(`*[${where(x)} && [title, pt::text(${BODY}), excerpt] match $q] | score(boost(title match $q, 3), pt::text(${BODY}) match $q) | order(_score desc) [0...${limit}] ${proj}`, { ...params(x), q: text.split(/\s+/).map((w) => w + '*').join(' ') });
       return { items: r.map(map) };
     },
     async get(ref) {
       const slug = ref.slug || (ref.url ? new URL(ref.url, location.href).pathname.split('/').filter(Boolean).pop() : undefined);
-      const full = proj.replace(/}\s*$/, ', "body": body[]{..., _type == "image" => {"url": asset->url, alt}}}');
-      const r = await q(`*[_type == $type && (${ref.id ? '_id == $id' : 'slug.current == $slug'})][0] ${full}`, { type, id: ref.id, slug });
+      const full = proj.replace(/}\s*$/, `, "body": ${BODY}[]{..., _type == "image" => {"url": asset->url, alt}}}`);
+      if (!ref.id && !slug) return null;
+      const r = await q(`*[_type == $type && !(_id in path("drafts.**")) && (${ref.id ? '_id == $id' : 'slug.current == $slug'})][0] ${full}`, { type, id: ref.id, slug });
       return r ? map(r) : null;
     },
     async taxonomies(): Promise<Taxonomies> {

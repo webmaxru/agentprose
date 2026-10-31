@@ -1,0 +1,5 @@
+kind: "Application"
+title: "agentprose"
+description: "Make your site readable by AI agents through WebMCP: read-only tools for articles, search and citations, in one site setting."
+vendorName: "Maxim Salnikov and agentprose contributors"
+vendorUrl: "https://salnikov.no/agentprose/"

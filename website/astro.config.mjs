@@ -80,6 +80,8 @@ export default defineConfig({
             { label: 'agentprose Cloud snippet', slug: 'install/cloud' },
             { label: 'npm package', slug: 'install/npm' },
             { label: 'WordPress plugin', slug: 'install/wordpress' },
+            { label: 'Sanity', slug: 'install/sanity' },
+            { label: 'Enonic XP', slug: 'install/enonic' },
             { label: 'Agent skill', slug: 'install/agent-skill' },
           ],
         },
