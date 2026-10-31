@@ -62,7 +62,7 @@ End-to-end on a real XP 8 sandbox (headless Chromium): see the header of [`test/
 
 ## Versions
 
-The app version follows the agentprose release it bundles: `node enonic-app/sync.mjs 0.1.4` copies that release from npm and sets `version` in `gradle.properties`. agentprose 0.1.3's Enonic adapter predates Guillotine 8/9 (XP 8), so Guillotine mode needs 0.1.4 or later; rendered-pages mode works with 0.1.3.
+The app version follows the agentprose release it bundles: `node enonic-app/sync.mjs 0.1.5` copies that release from npm and sets `version` in `gradle.properties`. agentprose 0.1.3's Enonic adapter predates Guillotine 8/9 (XP 8), so Guillotine mode needs 0.1.4 or later; rendered-pages mode works with 0.1.3.
 
 ## License
 

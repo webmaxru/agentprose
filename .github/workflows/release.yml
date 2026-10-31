@@ -8,7 +8,8 @@
 # Gate: the publish job runs in the `npm` environment, so its required reviewer approves it in the Actions UI.
 # Full setup and the release routine: docs/PUBLISHING-CI.md.
 # The e2e suite (real Chrome) runs in ci.yml on main: release from a main commit whose CI is green.
-# Only the npm package at the repo root is published here; the WordPress plugin has its own workflow.
+# Only the npm package at the repo root is published here (release tags v*). The WordPress plugin, the Sanity plugin
+# (release-sanity-plugin.yml, tags sanity-plugin-v*) and the Enonic app (release-enonic-app.yml, tags enonic-v*) have their own.
 name: Release to npm
 
 on:
@@ -35,6 +36,8 @@ env:
 jobs:
   verify:
     name: Verify (version, tests, build, pack)
+    # Only library tags (v1.2.3). sanity-plugin-v* and enonic-v* releases have their own workflows.
+    if: github.event_name != 'release' || startsWith(github.event.release.tag_name, 'v')
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.meta.outputs.version }}

@@ -1,0 +1,95 @@
+# Builds the Enonic XP app (enonic-app/) and attaches the jar to its GitHub Release.
+#
+# Trigger: publishing a GitHub Release whose tag starts with `enonic-v` (for example enonic-v0.1.5).
+# The tag must be `enonic-v` + `version` in enonic-app/gradle.properties (which `node enonic-app/sync.mjs <x.y.z>` sets).
+# Manual run from the Actions tab (workflow_dispatch): builds and uploads the same files as a workflow artifact.
+#
+# Attached to the release:
+#   agentprose-<version>.jar                     the app (install it in XP: Applications → Install → Upload)
+#   enonic-app-maven-repo-<version>.zip          a static Maven repository (no/salnikov/agentprose/<version>/…,
+#                                                 .pom, maven-metadata.xml, checksums), from `gradlew publish -PrepoDir`.
+#                                                 Enonic Market needs a public Maven repo: unzip it onto any static host.
+# No secrets are used. Library releases (tags v*) belong to release.yml.
+name: Release Enonic app
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/release-enonic-app.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build the app jar
+    if: github.event_name != 'release' || startsWith(github.event.release.tag_name, 'enonic-v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # gh release upload
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Version and tag checks
+        id: meta
+        env:
+          EVENT: ${{ github.event_name }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          VERSION=$(sed -n 's/^version *= *//p' enonic-app/gradle.properties | tr -d '\r ')
+          [ -n "$VERSION" ] || { echo "::error::no version in enonic-app/gradle.properties"; exit 1; }
+          if [ "$EVENT" = "release" ]; then
+            [ "$TAG" = "enonic-v$VERSION" ] || { echo "::error::release tag $TAG does not match enonic-app/gradle.properties (expected enonic-v$VERSION)"; exit 1; }
+            git fetch --no-tags origin main
+            git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "::error::tag $TAG points at a commit that is not on main"; exit 1; }
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "### Enonic app no.salnikov.agentprose $VERSION ($EVENT)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Bundled agentprose files match the app version
+        run: node enonic-app/sync.mjs --check
+      - run: node --test enonic-app/test/app.test.mjs
+
+      - name: Build the jar and a static Maven repository
+        working-directory: enonic-app
+        run: ./gradlew build publish -PrepoDir="$RUNNER_TEMP/maven" --no-daemon --console=plain
+
+      - name: Collect release files
+        id: files
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/out"
+          JAR="enonic-app/build/libs/agentprose-$VERSION.jar"
+          [ -f "$JAR" ] || { echo "::error::$JAR was not built"; ls -l enonic-app/build/libs; exit 1; }
+          cp "$JAR" "$RUNNER_TEMP/out/"
+          (cd "$RUNNER_TEMP/maven" && zip -qr "$RUNNER_TEMP/out/enonic-app-maven-repo-$VERSION.zip" .)
+          (cd "$RUNNER_TEMP/out" && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt)
+          { echo '```'; cat "$RUNNER_TEMP/out/SHA256SUMS.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: enonic-app-${{ steps.meta.outputs.version }}
+          path: ${{ runner.temp }}/out/*
+
+      - name: Attach to the GitHub Release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" "$RUNNER_TEMP"/out/* --clobber --repo "$GITHUB_REPOSITORY"
