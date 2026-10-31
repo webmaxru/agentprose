@@ -75,9 +75,13 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/out"
-          JAR="enonic-app/build/libs/agentprose-$VERSION.jar"
-          [ -f "$JAR" ] || { echo "::error::$JAR was not built"; ls -l enonic-app/build/libs; exit 1; }
-          cp "$JAR" "$RUNNER_TEMP/out/"
+          ls -l enonic-app/build/libs
+          # The app jar (the XP Gradle plugin names it; skip sources/javadoc/plain jars if any).
+          JAR=$(ls enonic-app/build/libs/*.jar | grep -v -e '-sources\.jar$' -e '-javadoc\.jar$' -e '-plain\.jar$' | head -1)
+          [ -n "$JAR" ] && [ -f "$JAR" ] || { echo "::error::no app jar in enonic-app/build/libs"; exit 1; }
+          cp "$JAR" "$RUNNER_TEMP/out/agentprose-$VERSION.jar"
+          find "$RUNNER_TEMP/maven" -type f | sort
+          [ -n "$(find "$RUNNER_TEMP/maven" -name '*.jar' -print -quit)" ] || { echo "::error::gradlew publish wrote no jar to the Maven repository"; exit 1; }
           (cd "$RUNNER_TEMP/maven" && zip -qr "$RUNNER_TEMP/out/enonic-app-maven-repo-$VERSION.zip" .)
           (cd "$RUNNER_TEMP/out" && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt)
           { echo '```'; cat "$RUNNER_TEMP/out/SHA256SUMS.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"

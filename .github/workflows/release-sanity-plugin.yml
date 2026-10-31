@@ -91,6 +91,9 @@ jobs:
           } >> "$GITHUB_OUTPUT"
           echo "### $PACKAGE@$VERSION → dist-tag \`$DIST_TAG\` ($EVENT)" >> "$GITHUB_STEP_SUMMARY"
 
+      - name: npm ci (repository root; the plugin's typecheck uses its Node types)
+        run: npm ci --registry "$NPM_REGISTRY"
+        working-directory: .
       - run: npm ci --registry "$NPM_REGISTRY"
       - run: npm run lint
       - run: npm run typecheck
@@ -132,6 +135,9 @@ jobs:
           npm --version
           node -e "const v=require('child_process').execSync('npm --version').toString().trim().split('.').map(Number); if (v[0]<11||(v[0]===11&&(v[1]<5||(v[1]===5&&v[2]<1)))) { console.error('npm '+v.join('.')+' is too old for trusted publishing'); process.exit(1) }"
 
+      - name: npm ci (repository root, as in the verify job)
+        run: npm ci --registry "$NPM_REGISTRY"
+        working-directory: .
       - run: npm ci --registry "$NPM_REGISTRY"
       - run: npm run build
 
