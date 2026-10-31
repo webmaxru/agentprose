@@ -157,7 +157,44 @@ The plugin in `wordpress-plugin/` is released separately to WordPress.org (see i
 
 ## 8. Sanity Studio plugin and Enonic XP app
 
-Both follow the library: release agentprose first, then:
+Both follow the library (release agentprose first) and have their own release workflows, triggered by their own tag prefix. `release.yml` ignores these tags, and each of these workflows ignores the others' tags.
 
-- **Sanity** (`sanity-plugin/`, Node 24): bump `version` and the `agentprose` dependency, `npm ci && npm test && npm run build && npm run test:studio`, then `npm publish --access public` from `sanity-plugin/`. Exchange listing: [docs/marketplaces/sanity/SUBMISSION.md](docs/marketplaces/sanity/SUBMISSION.md).
-- **Enonic** (`enonic-app/`, JDK 25): `node enonic-app/sync.mjs <version>` (copies the npm release into the app, sets the app version), `node --test enonic-app/test/app.test.mjs`, `cd enonic-app && ./gradlew build`, commit, tag `enonic-v<version>`, publish the jar to the public Maven repository. Market: [docs/marketplaces/enonic/SUBMISSION.md](docs/marketplaces/enonic/SUBMISSION.md).
+| Part | Version lives in | Release tag | Workflow | What it does |
+|---|---|---|---|---|
+| agentprose (library) | `package.json` | `v0.1.5` | `release.yml` | npm publish (approval in `npm` environment) |
+| Sanity plugin | `sanity-plugin/package.json` | `sanity-plugin-v0.1.5` | `release-sanity-plugin.yml` | npm publish of `sanity-plugin-agentprose` (approval in `npm` environment) |
+| Enonic app | `enonic-app/gradle.properties` | `enonic-v0.1.5` | `release-enonic-app.yml` | builds the jar + a static Maven repo zip and attaches them to the release (no secrets, no approval) |
+
+### Sanity plugin (`sanity-plugin/`, npm `sanity-plugin-agentprose`)
+
+**One-time setup (once, before the first workflow release).** npm can only add a trusted publisher to a package that already exists, so the very first version is published by hand:
+
+1. From a clean checkout of `main` (Node 24, Windows PowerShell shown; `npm` on macOS/Linux):
+   ```powershell
+   cd sanity-plugin
+   npm.cmd ci --registry https://registry.npmjs.org
+   npm.cmd test
+   npm.cmd login --registry https://registry.npmjs.org
+   npm.cmd publish --access public --registry https://registry.npmjs.org
+   ```
+   `prepublishOnly` runs the plugin-kit verify and the build again. A local publish has no provenance; every later version gets it from the workflow.
+2. npmjs.com → **sanity-plugin-agentprose** → **Settings** → **Trusted publishing** → **GitHub Actions**: user `webmaxru`, repository `agentprose`, workflow `release-sanity-plugin.yml`, environment `npm`. Save. (Optional, same page: *Publishing access* → "Require two-factor authentication and disallow tokens".)
+3. GitHub → **Settings → Environments → npm → Deployment branches and tags**: add the tag rule `sanity-plugin-v*` (the environment already allows `v*`; without the new rule the publish job is refused).
+
+**Every later version.**
+
+1. In `sanity-plugin/`: bump `version` (and the `agentprose` dependency when the plugin should require a newer library), `npm.cmd install --registry https://registry.npmjs.org` to update the lockfile, commit, push to `main`, wait for *CMS integrations* to go green.
+2. GitHub → **Releases → Draft a new release** → tag `sanity-plugin-v<version>` (create on publish, target `main`) → title `sanity-plugin-agentprose <version>` → **Publish release**. Or: `gh release create sanity-plugin-v<version> --target main --title "sanity-plugin-agentprose <version>" --notes "..."`. Leave *Set as the latest release* unticked, so the library's release stays "Latest".
+3. **Actions → Release Sanity plugin to npm → Review deployments → Approve.**
+4. Check: `npm.cmd view sanity-plugin-agentprose dist-tags --registry https://registry.npmjs.org`.
+
+The tag must be exactly `sanity-plugin-v` + the version in `sanity-plugin/package.json`. Exchange listing: [docs/marketplaces/sanity/SUBMISSION.md](docs/marketplaces/sanity/SUBMISSION.md).
+
+### Enonic app (`enonic-app/`, `no.salnikov.agentprose`)
+
+1. `node enonic-app/sync.mjs <agentprose version>` (copies that npm release into the app and sets `version` in `gradle.properties`), `node enonic-app/sync.mjs --check`, `node --test enonic-app/test/app.test.mjs`; commit, push to `main`, wait for *CMS integrations* to go green (it builds the jar too).
+2. GitHub → **Releases → Draft a new release** → tag `enonic-v<version>` (target `main`) → **Publish release** (leave *Set as the latest release* unticked).
+3. *Release Enonic app* builds and attaches `agentprose-<version>.jar`, `enonic-app-maven-repo-<version>.zip` (a static Maven repository: `no/salnikov/agentprose/<version>/…` with `.pom`, `maven-metadata.xml` and checksums) and `SHA256SUMS.txt` to the release. No approval, no secrets.
+4. Enonic Market needs the jar in a public Maven repository: unzip the Maven zip onto the chosen static host (see [docs/marketplaces/enonic/SUBMISSION.md](docs/marketplaces/enonic/SUBMISSION.md)), then email the Market team.
+
+A manual run (Actions → *Release Enonic app* → Run workflow) builds the same files as a downloadable workflow artifact without a release.

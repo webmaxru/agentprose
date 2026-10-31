@@ -1,0 +1,160 @@
+# Publishes the Sanity Studio plugin `sanity-plugin-agentprose` (sanity-plugin/) to npm when a GitHub Release
+# whose tag starts with `sanity-plugin-v` is published (for example sanity-plugin-v0.1.5).
+# The library itself is released by release.yml (tags v*); each workflow ignores the other's tags.
+#
+# Auth: npm trusted publishing (OIDC) + provenance, no NPM_TOKEN. One-time setup (RELEASING.md, "Sanity plugin"):
+#   1. The FIRST version is published by hand: npm can only add a trusted publisher to a package that already exists.
+#   2. npmjs.com → sanity-plugin-agentprose → Settings → Trusted publishing → GitHub Actions: user webmaxru,
+#      repository agentprose, workflow release-sanity-plugin.yml, environment npm.
+#   3. GitHub → Settings → Environments → npm → deployment tags: add the rule `sanity-plugin-v*`.
+# Gate: the publish job runs in the `npm` environment, so its required reviewer approves it in the Actions UI.
+name: Release Sanity plugin to npm
+
+on:
+  release:
+    types: [published]
+  # Manual dry run from the Actions tab: verifies, builds and packs, never publishes.
+  workflow_dispatch:
+  # A PR that changes this file runs the same dry run.
+  pull_request:
+    paths:
+      - '.github/workflows/release-sanity-plugin.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-release-sanity-plugin-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NPM_REGISTRY: https://registry.npmjs.org
+  PACKAGE: sanity-plugin-agentprose
+
+jobs:
+  verify:
+    name: Verify (version, lint, tests, build, pack)
+    # Library releases (tags v*) belong to release.yml.
+    if: github.event_name != 'release' || startsWith(github.event.release.tag_name, 'sanity-plugin-v')
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sanity-plugin
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      dist_tag: ${{ steps.meta.outputs.dist_tag }}
+      already_published: ${{ steps.meta.outputs.already_published }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # needed for the "tag is on main" check
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24 # @sanity/plugin-kit 10 needs Node 24
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Version, tag and dist-tag checks
+        id: meta
+        env:
+          EVENT: ${{ github.event_name }}
+          TAG: ${{ github.event.release.tag_name }}
+          PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          set -euo pipefail
+          VERSION=$(node -p "require('./package.json').version")
+          NAME=$(node -p "require('./package.json').name")
+          LOCK_VERSION=$(node -p "require('./package-lock.json').version")
+          [ "$NAME" = "$PACKAGE" ] || { echo "::error::package.json name is $NAME, expected $PACKAGE"; exit 1; }
+          [ "$LOCK_VERSION" = "$VERSION" ] || echo "::warning::package-lock.json says $LOCK_VERSION, package.json says $VERSION"
+          if [[ "$VERSION" == *-* || "${PRERELEASE:-false}" == "true" ]]; then DIST_TAG=next; else DIST_TAG=latest; fi
+          if [ "$EVENT" = "release" ]; then
+            [ "$TAG" = "sanity-plugin-v$VERSION" ] || { echo "::error::release tag $TAG does not match sanity-plugin/package.json version (expected sanity-plugin-v$VERSION)"; exit 1; }
+            git fetch --no-tags origin main
+            git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "::error::tag $TAG points at a commit that is not on main"; exit 1; }
+          fi
+          ALREADY=false
+          if npm view "$PACKAGE@$VERSION" version --registry "$NPM_REGISTRY" >/dev/null 2>&1; then
+            ALREADY=true
+            if [ "$EVENT" = "release" ]; then
+              echo "::notice::$PACKAGE@$VERSION is already on npm, so this release publishes nothing"
+              echo "$PACKAGE@$VERSION was already on npm: nothing to publish." >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "::warning::$PACKAGE@$VERSION is already on npm (fine for a dry run; bump before releasing)"
+            fi
+          fi
+          {
+            echo "version=$VERSION"
+            echo "dist_tag=$DIST_TAG"
+            echo "already_published=$ALREADY"
+          } >> "$GITHUB_OUTPUT"
+          echo "### $PACKAGE@$VERSION → dist-tag \`$DIST_TAG\` ($EVENT)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: npm ci (repository root; the plugin's typecheck uses its Node types)
+        run: npm ci --registry "$NPM_REGISTRY"
+        working-directory: .
+      - run: npm ci --registry "$NPM_REGISTRY"
+      - run: npm run lint
+      - run: npm run typecheck
+      - name: Tests against the agentprose release on npm
+        run: npm test
+      - name: Build (plugin-kit verify-package + pkg-utils)
+        run: npm run build
+      - run: npm pack --dry-run --registry "$NPM_REGISTRY"
+      - name: Dry-run publish (shows exactly what would be uploaded)
+        if: steps.meta.outputs.already_published != 'true'
+        run: npm publish --dry-run --ignore-scripts --access public --tag "${{ steps.meta.outputs.dist_tag }}" --registry "$NPM_REGISTRY"
+
+  publish:
+    name: Publish to npm (needs approval)
+    needs: verify
+    if: github.event_name == 'release' && needs.verify.outputs.already_published != 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sanity-plugin
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/sanity-plugin-agentprose/v/${{ needs.verify.outputs.version }}
+    permissions:
+      contents: read
+      id-token: write # OIDC token for npm trusted publishing and provenance
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24 # bundles npm 11 (trusted publishing needs npm >= 11.5.1)
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Check npm supports trusted publishing (>= 11.5.1)
+        run: |
+          npm --version
+          node -e "const v=require('child_process').execSync('npm --version').toString().trim().split('.').map(Number); if (v[0]<11||(v[0]===11&&(v[1]<5||(v[1]===5&&v[2]<1)))) { console.error('npm '+v.join('.')+' is too old for trusted publishing'); process.exit(1) }"
+
+      - name: npm ci (repository root, as in the verify job)
+        run: npm ci --registry "$NPM_REGISTRY"
+        working-directory: .
+      - run: npm ci --registry "$NPM_REGISTRY"
+      - run: npm run build
+
+      # Tests already passed in the verify job; --ignore-scripts skips the prepublishOnly re-run.
+      - name: npm publish (trusted publishing + provenance)
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} # empty unless you add the fallback secret; npm tries OIDC first
+        run: npm publish --ignore-scripts --provenance --access public --tag "${{ needs.verify.outputs.dist_tag }}" --registry "$NPM_REGISTRY"
+
+      - name: Confirm on the registry
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          for i in $(seq 1 31); do
+            if npm view "$PACKAGE@$VERSION" version --registry "$NPM_REGISTRY"; then break; fi
+            if [ "$i" = 31 ]; then echo "::error::$PACKAGE@$VERSION not visible on npm after 5 minutes (it may still be published: check npm before re-running)"; exit 1; fi
+            sleep 10
+          done
+          npm view "$PACKAGE" dist-tags --registry "$NPM_REGISTRY"
+          echo "Published https://www.npmjs.com/package/$PACKAGE/v/$VERSION" >> "$GITHUB_STEP_SUMMARY"

@@ -1,6 +1,6 @@
 # Submitting agentprose to Enonic Market
 
-Steps marked **[Maxim]** need Maxim's own accounts or decisions. Nothing has been published or submitted.
+Steps marked **[Maxim]** need Maxim's own accounts or decisions. Nothing has been published or submitted (as of 2026-10-31).
 
 ## What Enonic asks for (research, 2026-10-25)
 
@@ -14,7 +14,7 @@ Source: https://market.enonic.com/submit (read 2026-10-25), unless noted.
 | Icon as SVG | `assets/icon.svg` (= `application.svg` in the jar) |
 | Screenshots 16:9 with captions | `assets/screenshot-1.png`, `screenshot-2.png` (1600x900, real XP 8.1.1 + Content Studio 6.0.4) |
 | Documentation URL | docs site page `install/enonic` (added in this PR) |
-| Per version: version number, minimum XP version, changelog | 0.1.4 / 8.0.0 / see listing.md |
+| Per version: version number, minimum XP version, changelog | 0.1.5 / 8.0.0 / see listing.md |
 | Apps and libraries: a **public Maven repository** (repo URL, groupId, artifactId) where the jar downloads **without login**, plus the source URL | **to do [Maxim]**, options below |
 | Submission by email to **market@enonic.com**; author/vendor details on the first submission | **to do [Maxim]**, draft below |
 
@@ -29,15 +29,15 @@ Related facts used for the build: XP 8 is current (8.1.1 on 2026-10-25; Java 25,
 
 ## Steps
 
-1. **Release agentprose 0.1.4 to npm** **[Maxim]** (RELEASING.md). Guillotine mode needs it.
-2. Bundle it into the app: `node enonic-app/sync.mjs 0.1.4` (downloads the npm tarball, checks its integrity, copies the browser build and polyfill, sets `version` in `gradle.properties`). Then `node enonic-app/sync.mjs --check`.
-3. Test: `node --test enonic-app/test/app.test.mjs`, `cd enonic-app && ./gradlew build`, and optionally the sandbox e2e (instructions at the top of `test/sandbox-e2e.mjs`).
-4. Commit, tag `enonic-v0.1.4`, push.
+1. ~~Release agentprose 0.1.4 to npm~~ Done: agentprose **0.1.5** is on npm (2026-10-31).
+2. Done (2026-10-31): `node enonic-app/sync.mjs 0.1.5`; the app is version 0.1.5 and `sync.mjs --check` passes.
+3. CI (*CMS integrations*) runs the unit tests and `./gradlew build` on every change. The sandbox e2e (top of `test/sandbox-e2e.mjs`) is optional and local.
+4. **[Maxim]** Publish a GitHub Release tagged `enonic-v0.1.5` (target `main`). The *Release Enonic app* workflow attaches `agentprose-0.1.5.jar` and `enonic-app-maven-repo-0.1.5.zip` (the static Maven repository from `./gradlew publish -PrepoDir`) to it. See [RELEASING.md, section 8](../../../RELEASING.md#enonic-app-enonic-app-nosalnikovagentprose).
 5. **Publish the jar to a public Maven repository [Maxim: pick one]**:
-   - **A. Static Maven repo on GitHub Pages (recommended: no new accounts).** `./gradlew publish -PrepoDir=<dir>` writes a standard Maven layout (`no/salnikov/agentprose/0.1.4/agentprose-0.1.4.jar`, `.pom`, `maven-metadata.xml`, checksums; tried locally). Host the directory on any static host, for example as `maven/` on the docs site (repo URL `https://salnikov.no/agentprose/maven`) by adding the publish step to `.github/workflows/docs.yml`, or a `gh-pages` branch of a small `agentprose-maven` repo. Coordinates: `no.salnikov:agentprose`.
-   - **B. JitPack (no account).** Needs a `jitpack.yml` at the repo root that installs JDK 25 and runs `cd enonic-app && ./gradlew publishToMavenLocal` with `group` set to `com.github.webmaxru`. **Unverified**: JitPack's default JDK is 8 and JDK 25 support was not confirmed; try a build at https://jitpack.io/#webmaxru/agentprose before relying on it. Coordinates: repo `https://jitpack.io`, `com.github.webmaxru:agentprose:enonic-v0.1.4`.
+   - **A. Static Maven repo on GitHub Pages (recommended: no new accounts).** `./gradlew publish -PrepoDir=<dir>` writes a standard Maven layout (`no/salnikov/agentprose/0.1.5/agentprose-0.1.5.jar`, `.pom`, `maven-metadata.xml`, checksums; tried locally). Host the directory on any static host, for example as `maven/` on the docs site (repo URL `https://salnikov.no/agentprose/maven`) by adding the publish step to `.github/workflows/docs.yml`, or a `gh-pages` branch of a small `agentprose-maven` repo. Coordinates: `no.salnikov:agentprose`.
+   - **B. JitPack (no account).** Needs a `jitpack.yml` at the repo root that installs JDK 25 and runs `cd enonic-app && ./gradlew publishToMavenLocal` with `group` set to `com.github.webmaxru`. **Unverified**: JitPack's default JDK is 8 and JDK 25 support was not confirmed; try a build at https://jitpack.io/#webmaxru/agentprose before relying on it. Coordinates: repo `https://jitpack.io`, `com.github.webmaxru:agentprose:enonic-v0.1.5`.
    - **C. Maven Central** (Sonatype Central Portal account, namespace `no.salnikov` verified by a DNS TXT record on salnikov.no, GPG-signed artifacts). Most durable, most setup.
-6. Check the jar downloads anonymously: `curl -fI <repo>/no/salnikov/agentprose/0.1.4/agentprose-0.1.4.jar`.
+6. Check the jar downloads anonymously: `curl -fI <repo>/no/salnikov/agentprose/0.1.5/agentprose-0.1.5.jar`.
 7. **Email market@enonic.com [Maxim]** with the draft below, attaching `assets/icon.svg`, `screenshot-1.png`, `screenshot-2.png`.
 
 ## Email draft
@@ -57,8 +57,8 @@ Subject: New Market app: agentprose (make XP sites readable by AI agents)
 > Source: https://github.com/webmaxru/agentprose/tree/main/enonic-app
 > License: MIT (LICENSE.txt and NOTICE.txt in the source folder)
 > Maven repository: <repo URL>  groupId: no.salnikov  artifactId: agentprose
-> Version: 0.1.4, minimum XP version 8.0.0
-> Changelog: First Market release. Bundles agentprose 0.1.4 and the WebMCP polyfill 6.0.3; rendered-pages mode with a site index and Guillotine 8/9 mode.
+> Version: 0.1.5, minimum XP version 8.0.0
+> Changelog: First Market release. Bundles agentprose 0.1.5 and the WebMCP polyfill 6.0.3; rendered-pages mode with a site index and Guillotine 8/9 mode.
 > Screenshots (16:9, attached): 1) Site settings in Content Studio. 2) A published page with the agentprose tool inspector.
 > Icon: attached (SVG)
 >
@@ -71,4 +71,4 @@ Subject: New Market app: agentprose (make XP sites readable by AI agents)
 
 - **App name** `no.salnikov.agentprose` (group `no.salnikov`, from salnikov.no which Maxim owns). The app key is permanent once sites use it; change it before the first Market release if a different namespace (for example `dev.agentprose`) is preferred: `appName` in `gradle.properties`, the fixture's `cms/site.yaml`, and the asset URL in the README.
 - **Maven hosting**: A, B or C above.
-- **Version scheme**: the app version follows the bundled agentprose release (0.1.4). An app-only fix would need a fourth number or the next library release.
+- **Version scheme**: the app version follows the bundled agentprose release (0.1.5). An app-only fix would need a fourth number or the next library release.

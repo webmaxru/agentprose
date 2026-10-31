@@ -1,6 +1,6 @@
 # Submitting sanity-plugin-agentprose to Sanity Exchange
 
-Steps marked **[Maxim]** need Maxim's own accounts. Nothing has been published or submitted.
+Steps marked **[Maxim]** need Maxim's own accounts. Nothing has been published or submitted (as of 2026-10-31).
 
 ## What Sanity asks for (research, 2026-10-25)
 
@@ -22,10 +22,10 @@ Steps marked **[Maxim]** need Maxim's own accounts. Nothing has been published o
 
 ## Steps
 
-1. **Release agentprose 0.1.4 first** **[Maxim]** (RELEASING.md). The plugin depends on `agentprose ^0.1.3` and works with 0.1.3, but 0.1.4 carries the Sanity adapter fixes (summary from Portable Text, starter schema fields, no `undefined` params) that the website snippet uses.
-2. In `sanity-plugin/`, set `version` (start at `1.0.0` or keep in step with agentprose; Sanity plugins usually start at 1.0.0) and update the `agentprose` dependency to `^0.1.4`.
-3. `npm ci && npm test && npm run build && npm run test:studio` (Node 24; plugin-kit 10 needs Node 24).
-4. `npm publish --access public` from `sanity-plugin/` **[Maxim]** (npm account that owns `agentprose`; 2FA). `prepublishOnly` runs the verify and build again.
+1. ~~Release agentprose 0.1.4~~ Done: agentprose **0.1.5** is on npm (2026-10-31) with the Sanity adapter fixes.
+2. Done (2026-10-31): `sanity-plugin/` is version `0.1.5` and depends on `agentprose ^0.1.5` (kept in step with the library).
+3. CI (*CMS integrations*) runs lint, typecheck, tests against npm and against this repo, the build and a real Studio build on every change.
+4. **First publish by hand [Maxim]** (npm cannot attach a trusted publisher to a package that does not exist yet), then set up trusted publishing so later versions go out from GitHub Actions: [RELEASING.md, section 8](../../../RELEASING.md#sanity-plugin-sanity-plugin-npm-sanity-plugin-agentprose).
 5. Check https://www.npmjs.com/package/sanity-plugin-agentprose shows the README with the screenshot (the image URL points at `docs/marketplaces/sanity/assets/screenshot-1.png` on `main`, so merge first).
 6. Go to https://www.sanity.io/exchange → **Submit** (or https://www.sanity.io/plugins), sign in with a Sanity account **[Maxim]**.
 7. Choose listing type **Plugin**, fill the fields from [listing.md](listing.md), upload `assets/screenshot-1.png`, `screenshot-2.png`, the banner as cover and `icon.svg` / `icon-256x256.png` as the logo.

@@ -49,9 +49,9 @@ https://github.com/webmaxru/agentprose/tree/main/enonic-app
 - artifactId: `agentprose`
 
 ## Version entry
-- Version: 0.1.4
+- Version: 0.1.5
 - Minimum XP version: 8.0.0
-- Changelog: "First Market release. Bundles agentprose 0.1.4 and the WebMCP polyfill 6.0.3; rendered-pages mode with a site index (/agentprose.json) and Guillotine 8/9 mode."
+- Changelog: "First Market release. Bundles agentprose 0.1.5 and the WebMCP polyfill 6.0.3; rendered-pages mode with a site index (/agentprose.json) and Guillotine 8/9 mode."
 
 ## License files
 `enonic-app/LICENSE.txt` (MIT) and `enonic-app/NOTICE.txt` (agentprose MIT, WebMCP polyfill MIT, lib-asset and lib-portal Apache-2.0).
