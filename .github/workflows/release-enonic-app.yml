@@ -8,7 +8,8 @@
 #   agentprose-<version>.jar                     the app (install it in XP: Applications → Install → Upload)
 #   enonic-app-maven-repo-<version>.zip          a static Maven repository (no/salnikov/agentprose/<version>/…,
 #                                                 .pom, maven-metadata.xml, checksums), from `gradlew publish -PrepoDir`.
-#                                                 Enonic Market needs a public Maven repo: unzip it onto any static host.
+#                                                 Published at https://salnikov.no/agentprose/maven by docs.yml,
+#                                                 which this workflow starts after attaching the files.
 # No secrets are used. Library releases (tags v*) belong to release.yml.
 name: Release Enonic app
 
@@ -30,6 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # gh release upload
+      actions: write # start the docs deploy, which republishes the Maven repository
     steps:
       - uses: actions/checkout@v4
         with:
@@ -97,3 +99,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}
         run: gh release upload "$TAG" "$RUNNER_TEMP"/out/* --clobber --repo "$GITHUB_REPOSITORY"
+
+      # The docs site serves the static Maven repository at https://salnikov.no/agentprose/maven (Enonic Market's
+      # repository URL); docs.yml rebuilds it from every enonic-v* release, so start it now that the zip is attached.
+      - name: Republish the Maven repository (docs site deploy)
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run docs.yml --ref main --repo "$GITHUB_REPOSITORY"

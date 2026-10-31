@@ -12,6 +12,7 @@ No library changes yet. Tooling around it:
 - Enonic XP app 0.1.5 (`enonic-app/`): bundles agentprose 0.1.5 (`node enonic-app/sync.mjs 0.1.5`), so Guillotine mode works on Guillotine 8/9.
 
 ### Added
+- Static Maven repository for the Enonic app at [salnikov.no/agentprose/maven](https://salnikov.no/agentprose/maven/) (`no.salnikov:agentprose`), rebuilt by the docs deploy from every `enonic-v*` release (`enonic-app/scripts/maven-site.mjs`); `release-enonic-app.yml` starts that deploy after attaching the files.
 - Release workflows for the CMS integrations: `release-sanity-plugin.yml` (GitHub Release tagged `sanity-plugin-v*` → npm, trusted publishing + provenance, approval in the `npm` environment) and `release-enonic-app.yml` (GitHub Release tagged `enonic-v*` → jar and a static Maven repository attached to the release). `release.yml` now only handles library tags (`v*`).
 
 ## [0.1.5] - 2026-10-31

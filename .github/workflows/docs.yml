@@ -12,6 +12,7 @@ on:
       - 'src/**'
       - 'skills/**'
       - 'wordpress-plugin/**'
+      - 'enonic-app/scripts/maven-site.mjs'
       - 'CHANGELOG.md'
       - 'CONTRIBUTING.md'
       - 'RELEASING.md'
@@ -23,10 +24,12 @@ on:
       - 'docs/**'
       - 'src/**'
       - 'wordpress-plugin/**'
+      - 'enonic-app/scripts/maven-site.mjs'
       - 'CHANGELOG.md'
       - 'CONTRIBUTING.md'
       - 'RELEASING.md'
       - '.github/workflows/docs.yml'
+  # Also run by release-enonic-app.yml after it attaches a new jar, so the Maven repository below picks it up.
   workflow_dispatch:
 
 permissions:
@@ -67,6 +70,11 @@ jobs:
           node wordpress-plugin/sync.mjs "$version" --keep-version
           mkdir -p website/public/downloads
           cp dist/wordpress/agentprose.zip website/public/downloads/agentprose-wordpress.zip
+      - name: Maven repository for the Enonic app (from the enonic-v* releases → /maven/)
+        # https://salnikov.no/agentprose/maven : groupId no.salnikov, artifactId agentprose (Enonic Market reads it).
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node enonic-app/scripts/maven-site.mjs website/public/maven
       - run: npm ci
         working-directory: website
       - name: Build

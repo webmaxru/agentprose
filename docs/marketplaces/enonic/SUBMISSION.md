@@ -1,6 +1,6 @@
 # Submitting agentprose to Enonic Market
 
-Steps marked **[Maxim]** need Maxim's own accounts or decisions. Nothing has been published or submitted (as of 2026-10-31).
+Steps marked **[Maxim]** need Maxim's own accounts or decisions. Status 2026-10-31: the app is released (GitHub Release `enonic-v0.1.5`) and served from the public Maven repository `https://salnikov.no/agentprose/maven`; the Market email is the remaining step.
 
 ## What Enonic asks for (research, 2026-10-25)
 
@@ -15,8 +15,8 @@ Source: https://market.enonic.com/submit (read 2026-10-25), unless noted.
 | Screenshots 16:9 with captions | `assets/screenshot-1.png`, `screenshot-2.png` (1600x900, real XP 8.1.1 + Content Studio 6.0.4) |
 | Documentation URL | docs site page `install/enonic` (added in this PR) |
 | Per version: version number, minimum XP version, changelog | 0.1.5 / 8.0.0 / see listing.md |
-| Apps and libraries: a **public Maven repository** (repo URL, groupId, artifactId) where the jar downloads **without login**, plus the source URL | **to do [Maxim]**, options below |
-| Submission by email to **market@enonic.com**; author/vendor details on the first submission | **to do [Maxim]**, draft below |
+| Apps and libraries: a **public Maven repository** (repo URL, groupId, artifactId) where the jar downloads **without login**, plus the source URL | `https://salnikov.no/agentprose/maven`, `no.salnikov` / `agentprose` (option A below, chosen 2026-10-31) |
+| Submission by email to **market@enonic.com**; author/vendor details on the first submission | **to do [Maxim]**, final text below |
 
 Related facts used for the build: XP 8 is current (8.1.1 on 2026-10-25; Java 25, YAML descriptors; [migration guide](https://developer.enonic.com/docs/xp/stable/upgrade)); Guillotine 9.0.0 requires XP 8.1+ (repo.enonic.com maven-metadata), the Market page still showed 8.0.0; `lib-asset` replaces the deprecated `assetUrl` (pattern from enonic/app-google-tag-manager). An existing Market app published through JitPack: 99x Cookiebot (`jitpack.io/com/github/99x/cookiebot-xp`).
 
@@ -32,18 +32,20 @@ Related facts used for the build: XP 8 is current (8.1.1 on 2026-10-25; Java 25,
 1. ~~Release agentprose 0.1.4 to npm~~ Done: agentprose **0.1.5** is on npm (2026-10-31).
 2. Done (2026-10-31): `node enonic-app/sync.mjs 0.1.5`; the app is version 0.1.5 and `sync.mjs --check` passes.
 3. CI (*CMS integrations*) runs the unit tests and `./gradlew build` on every change. The sandbox e2e (top of `test/sandbox-e2e.mjs`) is optional and local.
-4. **[Maxim]** Publish a GitHub Release tagged `enonic-v0.1.5` (target `main`). The *Release Enonic app* workflow attaches `agentprose-0.1.5.jar` and `enonic-app-maven-repo-0.1.5.zip` (the static Maven repository from `./gradlew publish -PrepoDir`) to it. See [RELEASING.md, section 8](../../../RELEASING.md#enonic-app-enonic-app-nosalnikovagentprose).
-5. **Publish the jar to a public Maven repository [Maxim: pick one]**:
+4. Done (2026-10-31, Maxim): GitHub Release `enonic-v0.1.5`. The *Release Enonic app* workflow attaches `agentprose-0.1.5.jar` and `enonic-app-maven-repo-0.1.5.zip` (the static Maven repository from `./gradlew publish -PrepoDir`) to it. See [RELEASING.md, section 8](../../../RELEASING.md#enonic-app-enonic-app-nosalnikovagentprose).
+5. **Public Maven repository: A, chosen 2026-10-31.** `docs.yml` runs `enonic-app/scripts/maven-site.mjs`, which rebuilds `https://salnikov.no/agentprose/maven` from every `enonic-v*` release on each docs deploy; `release-enonic-app.yml` starts that deploy after a release. The options considered:
    - **A. Static Maven repo on GitHub Pages (recommended: no new accounts).** `./gradlew publish -PrepoDir=<dir>` writes a standard Maven layout (`no/salnikov/agentprose/0.1.5/agentprose-0.1.5.jar`, `.pom`, `maven-metadata.xml`, checksums; tried locally). Host the directory on any static host, for example as `maven/` on the docs site (repo URL `https://salnikov.no/agentprose/maven`) by adding the publish step to `.github/workflows/docs.yml`, or a `gh-pages` branch of a small `agentprose-maven` repo. Coordinates: `no.salnikov:agentprose`.
    - **B. JitPack (no account).** Needs a `jitpack.yml` at the repo root that installs JDK 25 and runs `cd enonic-app && ./gradlew publishToMavenLocal` with `group` set to `com.github.webmaxru`. **Unverified**: JitPack's default JDK is 8 and JDK 25 support was not confirmed; try a build at https://jitpack.io/#webmaxru/agentprose before relying on it. Coordinates: repo `https://jitpack.io`, `com.github.webmaxru:agentprose:enonic-v0.1.5`.
    - **C. Maven Central** (Sonatype Central Portal account, namespace `no.salnikov` verified by a DNS TXT record on salnikov.no, GPG-signed artifacts). Most durable, most setup.
 6. Check the jar downloads anonymously: `curl -fI <repo>/no/salnikov/agentprose/0.1.5/agentprose-0.1.5.jar`.
 7. **Email market@enonic.com [Maxim]** with the draft below, attaching `assets/icon.svg`, `screenshot-1.png`, `screenshot-2.png`.
 
-## Email draft
+## Email (final text, 2026-10-31)
 
-Subject: New Market app: agentprose (make XP sites readable by AI agents)
-
+> To: market@enonic.com
+> Subject: New Market app: agentprose (make XP sites readable by AI agents)
+> Attachments: icon.svg, screenshot-1.png, screenshot-2.png (from docs/marketplaces/enonic/assets/)
+>
 > Hi Enonic Market team,
 >
 > I'd like to submit a new open-source application to Enonic Market.
@@ -51,23 +53,53 @@ Subject: New Market app: agentprose (make XP sites readable by AI agents)
 > Type: Application
 > Project name: agentprose
 > Display name: agentprose
+> App key: no.salnikov.agentprose
 > Short description: Make your site readable by AI agents through WebMCP: read-only tools for articles, search and citations, in one site setting.
-> Long description: (from listing.md)
+>
+> Maven repository: https://salnikov.no/agentprose/maven
+> groupId: no.salnikov
+> artifactId: agentprose
+> Version: 0.1.5
+> Jar (downloads without login): https://salnikov.no/agentprose/maven/no/salnikov/agentprose/0.1.5/agentprose-0.1.5.jar
+> Minimum XP version: 8.0.0
+> Changelog for 0.1.5: First Market release. Bundles agentprose 0.1.5 and the WebMCP polyfill 6.0.3; rendered-pages mode with a site index (/agentprose.json) and Guillotine 8/9 mode.
+>
 > Documentation: https://salnikov.no/agentprose/install/enonic/
-> Source: https://github.com/webmaxru/agentprose/tree/main/enonic-app
-> License: MIT (LICENSE.txt and NOTICE.txt in the source folder)
-> Maven repository: <repo URL>  groupId: no.salnikov  artifactId: agentprose
-> Version: 0.1.5, minimum XP version 8.0.0
-> Changelog: First Market release. Bundles agentprose 0.1.5 and the WebMCP polyfill 6.0.3; rendered-pages mode with a site index and Guillotine 8/9 mode.
-> Screenshots (16:9, attached): 1) Site settings in Content Studio. 2) A published page with the agentprose tool inspector.
+> Source code: https://github.com/webmaxru/agentprose/tree/main/enonic-app
+> License: MIT (LICENSE.txt and NOTICE.txt are in the source folder; bundled: agentprose MIT, WebMCP polyfill MIT, lib-asset and lib-portal Apache-2.0)
+>
+> Long description:
+>
+> AI agents now browse the web for people: in Chrome, in MCP-B, in agentic browsers. agentprose gives them read-only WebMCP tools for your site (get_current_article, search_posts, list_posts, get_post, sections and citations), so they answer from your content instead of scraping your pages.
+>
+> Add the app to a site and you are done:
+>
+> - One site setting. A response processor adds one deferred script to every page. Nothing is injected in Content Studio's edit mode.
+> - Nothing from a CDN. The app serves a fixed agentprose release and the pinned WebMCP polyfill from your own site, fingerprinted and cached.
+> - Whole-site tools on any site. The app publishes /agentprose.json, an index of the site's published content, so agents can list and search everything.
+> - Headless too. Switch the source to Guillotine and agents read published content straight from the Guillotine GraphQL API.
+> - Private by default. No cookies, no tracking, nothing sent anywhere unless you add an agentprose Cloud key for analytics.
+>
+> Settings: content source (rendered pages or Guillotine), content types, article selector, tool prefix, subscribe/about/contact links, Cloud key, polyfill switch, and a 🔌 tool inspector in preview.
+>
+> Open source (MIT): https://github.com/webmaxru/agentprose
+>
+> Screenshots (16:9, 1600x900, attached):
+> 1. Site settings in Content Studio: pick where agents read from, which content they list and how tools are named.
+> 2. A published page with the agentprose tool inspector (?agentprose-inspect): the read-only WebMCP tools agents get.
 > Icon: attached (SVG)
 >
-> Author: Maxim Salnikov, salnikov@gmail.com, https://salnikov.no (GitHub: webmaxru)
+> Author / vendor: Maxim Salnikov, salnikov@gmail.com, https://salnikov.no (GitHub: webmaxru)
 >
 > Thanks,
-> Maxim
+> Maxim Salnikov
 
-## Decisions for Maxim
+## Decisions (made 2026-10-31)
+
+- App key stays `no.salnikov.agentprose` (permanent once sites use it).
+- Maven hosting: A, the static repository at `https://salnikov.no/agentprose/maven`.
+
+## Earlier notes
 
 - **App name** `no.salnikov.agentprose` (group `no.salnikov`, from salnikov.no which Maxim owns). The app key is permanent once sites use it; change it before the first Market release if a different namespace (for example `dev.agentprose`) is preferred: `appName` in `gradle.properties`, the fixture's `cms/site.yaml`, and the asset URL in the README.
 - **Maven hosting**: A, B or C above.

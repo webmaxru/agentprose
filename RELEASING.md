@@ -167,7 +167,7 @@ Both follow the library (release agentprose first) and have their own release wo
 
 ### Sanity plugin (`sanity-plugin/`, npm `sanity-plugin-agentprose`)
 
-**One-time setup (once, before the first workflow release).** npm can only add a trusted publisher to a package that already exists, so the very first version is published by hand:
+**One-time setup (once, before the first workflow release).** Done on 2026-10-31: 0.1.5 was published by hand, the trusted publisher and the `sanity-plugin-v*` tag rule were added, and 0.1.6 is the first workflow release (npm marks a new trusted-publisher configuration *Pending validation* until one publish uses it). npm can only add a trusted publisher to a package that already exists, so the very first version is published by hand:
 
 1. From a clean checkout of `main` (Node 24, Windows PowerShell shown; `npm` on macOS/Linux):
    ```powershell
@@ -195,6 +195,7 @@ The tag must be exactly `sanity-plugin-v` + the version in `sanity-plugin/packag
 1. `node enonic-app/sync.mjs <agentprose version>` (copies that npm release into the app and sets `version` in `gradle.properties`), `node enonic-app/sync.mjs --check`, `node --test enonic-app/test/app.test.mjs`; commit, push to `main`, wait for *CMS integrations* to go green (it builds the jar too).
 2. GitHub → **Releases → Draft a new release** → tag `enonic-v<version>` (target `main`) → **Publish release** (leave *Set as the latest release* unticked).
 3. *Release Enonic app* builds and attaches `agentprose-<version>.jar`, `enonic-app-maven-repo-<version>.zip` (a static Maven repository: `no/salnikov/agentprose/<version>/…` with `.pom`, `maven-metadata.xml` and checksums) and `SHA256SUMS.txt` to the release. No approval, no secrets.
-4. Enonic Market needs the jar in a public Maven repository: unzip the Maven zip onto the chosen static host (see [docs/marketplaces/enonic/SUBMISSION.md](docs/marketplaces/enonic/SUBMISSION.md)), then email the Market team.
+4. The workflow then starts *Docs site → GitHub Pages*, which rebuilds the static Maven repository at **https://salnikov.no/agentprose/maven** (groupId `no.salnikov`, artifactId `agentprose`) from every `enonic-v*` release (`enonic-app/scripts/maven-site.mjs`: unzips each release's Maven zip, verifies its sha256, rewrites `maven-metadata.xml` to list all versions). Check: `curl -fI https://salnikov.no/agentprose/maven/no/salnikov/agentprose/<version>/agentprose-<version>.jar`.
+5. Tell Enonic Market about the new version (email market@enonic.com: version, minimum XP version, changelog); see [docs/marketplaces/enonic/SUBMISSION.md](docs/marketplaces/enonic/SUBMISSION.md).
 
 A manual run (Actions → *Release Enonic app* → Run workflow) builds the same files as a downloadable workflow artifact without a release.

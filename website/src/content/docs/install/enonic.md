@@ -38,4 +38,12 @@ The script tag works on XP too, reading Guillotine mounted on the site (`<site U
 
 Guillotine 8 and 9 (XP 8) need agentprose 0.1.4 or later; older releases speak the Guillotine 7 schema.
 
+## Maven repository
+
+Every release of the app is in a public Maven repository (no login), which is where Enonic Market downloads it from:
+
+- Repository URL: `https://salnikov.no/agentprose/maven`
+- groupId `no.salnikov`, artifactId `agentprose`, app key `no.salnikov.agentprose`
+- The jars are also attached to the [GitHub Releases](https://github.com/webmaxru/agentprose/releases) tagged `enonic-v*`.
+
 Source, build and tests: [enonic-app/](https://github.com/webmaxru/agentprose/tree/main/enonic-app).
