@@ -24,6 +24,9 @@ before(async () => {
   // Fixture: a page that opts out of the MCP-B polyfill.
   mkdirSync(join(root, 'nopoly'), { recursive: true });
   writeFileSync(join(root, 'nopoly/index.html'), `<!doctype html><html><head><title>No polyfill</title><meta property="og:type" content="article"></head><body><article><h1>No polyfill</h1><p>${'Text. '.repeat(30)}</p></article><script src="/agentprose.min.js" defer data-polyfill="off" data-sitemap="false" data-llms="false"></script></body></html>`);
+  // Fixture: a page whose CSP forbids inline styles (style-src 'self', as agentprose Cloud's own pages send).
+  mkdirSync(join(root, 'csp'), { recursive: true });
+  writeFileSync(join(root, 'csp/index.html'), `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="style-src 'self'"><title>Strict CSP</title><meta property="og:type" content="article"></head><body><article><h1>Strict CSP</h1><p>${'Text. '.repeat(30)}</p></article><script src="/agentprose.min.js" defer data-polyfill="off" data-sitemap="false" data-llms="false"></script></body></html>`);
   // Fixture: a copy laid out like an agentprose Cloud: /v/<version>/ and the evergreen channel /v/0/, with the
   // self-hosted polyfill next to the bundle.
   const version = JSON.parse(readFileSync('package.json', 'utf8')).version;
@@ -289,6 +292,18 @@ test('inspector panel lists the tools and runs one', async () => {
   });
   assert.equal(out.count, 11);
   assert.match(out.text, /Why agents should get markdown, not HTML/);
+});
+
+test('inspector is styled under a strict CSP (style-src \'self\', no unsafe-inline)', async () => {
+  const page = await plain.newPage();
+  const blocked = [];
+  page.on('console', (m) => /Content Security Policy/.test(m.text()) && blocked.push(m.text()));
+  await page.goto(base + 'csp/?agentprose-inspect');
+  await page.waitForFunction(() => document.getElementById('agentprose-inspector')?.shadowRoot?.querySelector('.btn'));
+  const position = await page.evaluate(() => getComputedStyle(document.getElementById('agentprose-inspector').shadowRoot.querySelector('.btn')).position);
+  assert.equal(position, 'fixed');
+  assert.deepEqual(blocked, []);
+  await page.close();
 });
 
 test('bare page without feeds: current-article tools work and site-wide tools degrade gracefully', async (t) => {
