@@ -72,7 +72,18 @@ export async function mount(open = false): Promise<void> {
   const root = host.attachShadow({ mode: 'open' });
   document.body.appendChild(host);
   const src = await sourceOfTools();
-  root.innerHTML = `<style>${CSS}</style><button class="btn" aria-expanded="${open}">🔌 Agent tools (${src.tools.length})</button>
+  // A constructed stylesheet is not inline CSS, so a strict CSP (style-src 'self', no 'unsafe-inline') does not
+  // block it the way it blocks a <style> element. Browsers without adoptedStyleSheets get the <style> as before.
+  let style = `<style>${CSS}</style>`;
+  try {
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(CSS);
+    root.adoptedStyleSheets = [sheet];
+    style = '';
+  } catch {
+    /* keep the <style> fallback */
+  }
+  root.innerHTML = `${style}<button class="btn" aria-expanded="${open}">🔌 Agent tools (${src.tools.length})</button>
   <div class="panel" ${open ? '' : 'hidden'} role="dialog" aria-label="WebMCP tools on this page">
     <header><b>WebMCP tools on this page</b><div class="mode">${esc(src.mode)}</div></header>
     <div class="list">${src.tools

@@ -4,7 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-No library changes yet. Tooling around it:
+### Fixed
+- Inspector (`?agentprose-inspect`, `data-inspector`): styles now come from a constructed stylesheet (`adoptedStyleSheets`), so a strict Content Security Policy without `'unsafe-inline'` in `style-src` no longer leaves it unstyled (seen on agentprose.cloud, which sends `style-src 'self'`). Browsers without constructable stylesheets get the inline `<style>` as before.
+
+Tooling around the library:
 
 ### Changed
 - Sanity Studio plugin 0.1.5 (`sanity-plugin/`): depends on `agentprose ^0.1.5`; published to npm by hand on 2026-10-31 (the first version, so the npm trusted publisher could be added).
