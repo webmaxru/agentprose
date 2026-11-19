@@ -26,3 +26,4 @@ dist/
 /public/llms.txt
 /src/content/docs/wordpress/changelog.md
 /src/assets/wordpress/
+.env
