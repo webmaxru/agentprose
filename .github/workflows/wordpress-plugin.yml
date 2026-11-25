@@ -8,6 +8,24 @@ on:
 permissions:
   contents: read
 jobs:
+  php-lint:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.6']
+    defaults:
+      run:
+        working-directory: wordpress-plugin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - name: PHP syntax lint (${{ matrix.php }})
+        run: for f in $(find agentprose -name '*.php'); do php -l "$f"; done
+
   phpcs:
     runs-on: ubuntu-latest
     defaults:

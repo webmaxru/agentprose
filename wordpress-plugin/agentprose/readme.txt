@@ -2,7 +2,7 @@
 Contributors: maxious
 Tags: ai, webmcp, mcp, ai-agents, llm
 Requires at least: 6.3
-Tested up to: 7.1
+Tested up to: 7.2
 Requires PHP: 7.4
 Stable tag: 0.1.6
 License: GPLv2 or later
@@ -120,6 +120,7 @@ Maxim Salnikov (WordPress.org: maxious, GitHub: webmaxru, salnikov@gmail.com). H
 * Bundles [agentprose 0.1.6](https://github.com/webmaxru/agentprose/blob/main/CHANGELOG.md) and the MCP-B WebMCP polyfill 6.0.3, served from your site.
 * The tool inspector (`?agentprose-inspect`) stays styled on sites with a strict Content Security Policy (no `unsafe-inline` needed for styles).
 * The library's banner and links name its new home, github.com/webmaxru/agentprose.
+* Confirmed compatibility with WordPress 7.2 and PHP 8.6.
 
 = 0.1.3 =
 * Bundles [agentprose 0.1.3](https://github.com/webmaxru/agentprose/blob/main/CHANGELOG.md) and the MCP-B WebMCP polyfill 6.0.3, served from your site.
